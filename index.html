@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transportes Morales — Panel</title>
+<style>
+  :root {
+    --fondo: #0F172A;
+    --superficie: #1E293B;
+    --superficie-2: #273449;
+    --borde: #334155;
+    --texto: #F1F5F9;
+    --texto-2: #CBD5E1;
+    --gris: #94A3B8;
+    --amarillo: #FBBF24;
+    --verde: #6EE7B7;
+    --rojo: #FCA5A5;
+    --azul: #60A5FA;
+    --morado: #C4B5FD;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--texto); font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  [hidden] { display: none !important; }
+  button, select, input { font: inherit; }
+
+  /* ---------- Login ---------- */
+  .centro { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .caja { width: 100%; max-width: 380px; background: var(--superficie); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+  .logo { width: 64px; height: 64px; border-radius: 20px; background: var(--amarillo); display: flex; align-items: center; justify-content: center; }
+  .caja h1 { margin: 0; font-size: 26px; }
+  .caja p { margin: 0; color: var(--gris); }
+  .campo { display: flex; flex-direction: column; gap: 6px; }
+  .campo label { font-size: 13px; color: var(--gris); }
+  .campo input { height: 46px; border-radius: 12px; border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); padding: 0 14px; }
+  .campo input:focus { outline: 2px solid var(--amarillo); border-color: transparent; }
+  .boton { height: 48px; border: none; border-radius: 14px; background: var(--amarillo); color: var(--fondo); font-weight: 700; cursor: pointer; }
+  .boton:disabled { opacity: .6; cursor: wait; }
+  .boton-sec { height: 40px; border: 1px solid var(--borde); border-radius: 12px; background: transparent; color: var(--texto-2); padding: 0 14px; cursor: pointer; }
+  .error { color: var(--rojo); font-size: 14px; min-height: 1em; }
+
+  /* ---------- Panel ---------- */
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; display: flex; flex-direction: column; gap: 20px; }
+  .encabezado { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .encabezado h1 { margin: 0; font-size: 26px; flex: 1; min-width: 220px; }
+  .encabezado .sub { color: var(--gris); font-size: 13px; font-weight: 400; display: block; margin-top: 2px; }
+  .aviso-demo { background: #422006; color: #FDE68A; border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+  .filtros { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+  .filtros .campo select { height: 42px; min-width: 190px; border-radius: 12px; border: 1px solid var(--borde); background: var(--superficie); color: var(--texto); padding: 0 12px; }
+  .solo-lectura { margin-left: auto; color: var(--gris); font-size: 12px; border: 1px solid var(--borde); border-radius: 999px; padding: 6px 12px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .kpi { background: var(--superficie); border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; border-top: 4px solid var(--acento, var(--borde)); }
+  .kpi .etq { font-size: 13px; color: var(--gris); }
+  .kpi .val { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+  .kpi .det { font-size: 13px; color: var(--texto-2); }
+
+  .tarjeta { background: var(--superficie); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .tarjeta h2 { margin: 0; font-size: 17px; }
+  .tarjeta .nota { color: var(--gris); font-size: 13px; margin: -6px 0 0; }
+  .dos { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 20px; }
+  @media (max-width: 520px) { .dos { grid-template-columns: 1fr; } }
+
+  .leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--texto-2); }
+  .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .leyenda i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .grafica { width: 100%; overflow-x: auto; }
+  .grafica svg { display: block; width: 100%; min-width: 560px; height: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 12px; color: var(--gris); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+  td { padding: 10px; border-bottom: 1px solid var(--superficie-2); }
+  tr:last-child td { border-bottom: none; }
+  tfoot td { font-weight: 800; border-top: 2px solid var(--borde); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabla { overflow-x: auto; }
+  .punto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .barrita { height: 8px; border-radius: 4px; background: var(--superficie-2); min-width: 80px; }
+  .barrita > div { height: 8px; border-radius: 4px; }
+  .estado { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+  .estado.debe { background: #450a0a; color: var(--rojo); }
+  .estado.aldia { background: #052e1f; color: var(--verde); }
+  .vacio { color: var(--gris); font-size: 14px; padding: 8px 0; }
+
+  .deudas { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .deuda { background: var(--superficie-2); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .deuda .fila { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .deuda .nombre { font-weight: 700; font-size: 16px; }
+  .deuda .puesto { color: var(--gris); font-size: 12px; }
+  .deuda .saldo { font-size: 22px; font-weight: 800; color: var(--rojo); font-variant-numeric: tabular-nums; }
+  .deuda .progreso { height: 8px; border-radius: 4px; background: var(--borde); overflow: hidden; }
+  .deuda .progreso div { height: 8px; background: var(--verde); }
+  .deuda .mini { display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-2); }
+  details summary { cursor: pointer; color: var(--azul); font-size: 13px; }
+  details ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+  details li { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed var(--borde); padding-bottom: 4px; }
+
+  #tooltip { position: fixed; pointer-events: none; background: #0B1222; border: 1px solid var(--borde); border-radius: 10px; padding: 10px 12px; font-size: 13px; min-width: 170px; box-shadow: 0 8px 24px rgba(0,0,0,.4); z-index: 10; }
+  #tooltip .t { font-weight: 700; margin-bottom: 6px; }
+  #tooltip .r { display: flex; justify-content: space-between; gap: 14px; }
+  #tooltip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--texto-2); }
+  #tooltip .total { border-top: 1px solid var(--borde); margin-top: 6px; padding-top: 6px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<section id="vistaLogin" class="centro" hidden>
+  <form class="caja" id="formLogin">
+    <div class="logo" aria-hidden="true">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="#0F172A"><path d="M20,8h-3V4H3c-1.1,0 -2,0.9 -2,2v11h2c0,1.66 1.34,3 3,3s3,-1.34 3,-3h6c0,1.66 1.34,3 3,3s3,-1.34 3,-3h2v-5l-3,-4zM6,18.5c-0.83,0 -1.5,-0.67 -1.5,-1.5s0.67,-1.5 1.5,-1.5 1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5zM19.5,9.5l1.96,2.5H17V9.5h2.5zM18,18.5c-0.83,0 -1.5,-0.67 -1.5,-1.5s0.67,-1.5 1.5,-1.5 1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></svg>
+    </div>
+    <h1>Transportes Morales</h1>
+    <p>Panel de consulta · entra con tu usuario de la app</p>
+    <div class="campo"><label for="usuario">Usuario</label><input id="usuario" autocomplete="username" required></div>
+    <div class="campo"><label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password" required></div>
+    <div class="error" id="errorLogin"></div>
+    <button class="boton" id="botonEntrar" type="submit">Entrar</button>
+  </form>
+</section>
+
+<!-- ========== ESPERA / MENSAJES ========== -->
+<section id="vistaMensaje" class="centro" hidden>
+  <div class="caja">
+    <h1 id="msgTitulo">Cargando…</h1>
+    <p id="msgTexto"></p>
+    <button class="boton-sec" id="botonSalir2" type="button">Cerrar sesión</button>
+  </div>
+</section>
+
+<!-- ========== PANEL ========== -->
+<main id="vistaPanel" hidden>
+  <div class="encabezado">
+    <h1>Transportes Morales <span class="sub" id="subtitulo">Panel de consulta</span></h1>
+    <button class="boton-sec" id="botonSalir" type="button">Cerrar sesión</button>
+  </div>
+  <div class="aviso-demo" id="avisoDemo" hidden>Estás viendo <b>datos de ejemplo</b>. Así se verá el panel con tus datos reales.</div>
+
+  <div class="filtros">
+    <div class="campo">
+      <label for="fPeriodo">Periodo</label>
+      <select id="fPeriodo">
+        <option value="mes">Este mes</option>
+        <option value="mesPasado">Mes pasado</option>
+        <option value="3meses">Últimos 3 meses</option>
+        <option value="anio">Este año</option>
+        <option value="todo">Todo el historial</option>
+      </select>
+    </div>
+    <div class="campo">
+      <label for="fCamion">Camión</label>
+      <select id="fCamion"><option value="">Todos los camiones</option></select>
+    </div>
+    <span class="solo-lectura">👁 Solo lectura</span>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="tarjeta">
+    <h2>Diésel por mes</h2>
+    <p class="nota" id="notaMes">Últimos 12 meses · pasa el cursor sobre una barra para ver el detalle</p>
+    <div class="leyenda" id="leyendaMes"></div>
+    <div class="grafica" id="graficaMes"></div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Diésel por camión</h2>
+    <p class="nota" id="notaCamion"></p>
+    <div class="tabla" id="tablaCamion"></div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Adelantos por piloto y ayudante</h2>
+    <p class="nota" id="notaPersonal"></p>
+    <div class="tabla" id="tablaPersonal"></div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Deudas pendientes</h2>
+    <p class="nota">Lo que debe cada persona hoy, con sus adelantos y abonos</p>
+    <div class="deudas" id="deudas"></div>
+  </div>
+</main>
+
+<div id="tooltip" hidden></div>
+
+<script type="module">
+// =====================================================================
+//  CONFIGURACIÓN DE FIREBASE (Configuración del proyecto → Tus apps → Web)
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyA2BY36dEe21QHQlpPi8A9yEpx4mxTtIqw",
+  authDomain: "transportesmorales-9ceb7.firebaseapp.com",
+  projectId: "transportesmorales-9ceb7",
+  storageBucket: "transportesmorales-9ceb7.firebasestorage.app",
+  messagingSenderId: "490305022901",
+  appId: "1:490305022901:web:416356106158621ec747fc"
+};
+const DOMINIO_USUARIOS = "@miscamiones.app";
+const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
+
+// Colores por camión (validados para daltonismo sobre el fondo oscuro), siempre en este orden
+const COLORES_CAMION = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#0ca30c", "#9085e9", "#e66767"];
+
+const $ = (id) => document.getElementById(id);
+const fmtQ = (n) => "Q " + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtQcorto = (n) => n >= 1000 ? "Q " + (n / 1000).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "k" : "Q " + Math.round(n);
+const fmtGal = (n) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const fmtFecha = (ms) => { const d = new Date(ms); return d.getDate() + " " + MESES[d.getMonth()] + " " + d.getFullYear(); };
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const datos = { camiones: [], pilotos: [], diesel: [], movimientos: [] };
+
+function mostrar(vista) {
+  for (const v of ["vistaLogin", "vistaMensaje", "vistaPanel"]) $(v).hidden = v !== vista;
+}
+function mensaje(titulo, texto) {
+  $("msgTitulo").textContent = titulo;
+  $("msgTexto").textContent = texto || "";
+  mostrar("vistaMensaje");
+}
+
+// ---------------------------------------------------------------------
+//  Periodo
+// ---------------------------------------------------------------------
+function rangoPeriodo() {
+  const hoy = new Date();
+  const y = hoy.getFullYear(), m = hoy.getMonth();
+  const fin = new Date(y, m, hoy.getDate(), 23, 59, 59, 999).getTime();
+  switch ($("fPeriodo").value) {
+    case "mesPasado": return { ini: new Date(y, m - 1, 1).getTime(), fin: new Date(y, m, 1).getTime() - 1, txt: MESES[(m + 11) % 12] + " " + (m === 0 ? y - 1 : y) };
+    case "3meses": return { ini: new Date(y, m - 2, 1).getTime(), fin, txt: "últimos 3 meses" };
+    case "anio": return { ini: new Date(y, 0, 1).getTime(), fin, txt: "año " + y };
+    case "todo": return { ini: 0, fin, txt: "todo el historial" };
+    default: return { ini: new Date(y, m, 1).getTime(), fin, txt: MESES[m] + " " + y };
+  }
+}
+
+// ---------------------------------------------------------------------
+//  Dibujar todo
+// ---------------------------------------------------------------------
+function dibujar() {
+  const { camiones, pilotos, diesel, movimientos } = datos;
+  const colorCamion = {};
+  camiones.forEach((c, i) => colorCamion[c.id] = COLORES_CAMION[i % COLORES_CAMION.length]);
+  const nombreCamion = Object.fromEntries(camiones.map((c) => [c.id, c.nombre]));
+
+  // Selector de camiones (se conserva la elección)
+  const sel = $("fCamion"), elegido = sel.value;
+  sel.innerHTML = '<option value="">Todos los camiones</option>' +
+    camiones.map((c) => `<option value="${esc(c.id)}">${esc(c.nombre)}${c.placa ? " · " + esc(c.placa) : ""}</option>`).join("");
+  sel.value = camiones.some((c) => c.id === elegido) ? elegido : "";
+  const fCam = sel.value;
+
+  const r = rangoPeriodo();
+  const enRango = (ms) => ms >= r.ini && ms <= r.fin;
+  const cargas = diesel.filter((d) => (!fCam || d.camionId === fCam));
+  const cargasRango = cargas.filter((d) => enRango(d.fecha));
+  const totalDiesel = cargasRango.reduce((s, d) => s + d.monto, 0);
+  const galones = cargasRango.reduce((s, d) => s + d.galones, 0);
+  const pendiente = cargasRango.filter((d) => !d.pagado).reduce((s, d) => s + d.monto, 0);
+
+  const movs = movimientos.filter((m) => m.tipo === "ADELANTO" || m.tipo === "ABONO" || m.tipo === "PAGO");
+  const saldo = (pid) => movs.filter((m) => m.pilotoId === pid)
+    .reduce((s, m) => s + (m.tipo === "ADELANTO" ? m.monto : m.tipo === "ABONO" ? -m.monto : 0), 0);
+  const adelantadoRango = movs.filter((m) => m.tipo === "ADELANTO" && enRango(m.fecha)).reduce((s, m) => s + m.monto, 0);
+  const deudaTotal = pilotos.reduce((s, p) => s + Math.max(0, saldo(p.id)), 0);
+  const conDeuda = pilotos.filter((p) => saldo(p.id) > 0).length;
+
+  const textoCamion = fCam ? nombreCamion[fCam] : "todos los camiones";
+  $("subtitulo").textContent = "Panel de consulta · " + r.txt;
+
+  // ---- KPIs
+  $("kpis").innerHTML = [
+    kpi("Diésel gastado", fmtQ(totalDiesel), `${fmtGal(galones)} galones · ${cargasRango.length} cargas`, "var(--amarillo)"),
+    kpi("Diésel pendiente de pagar", fmtQ(pendiente), "Pagado: " + fmtQ(totalDiesel - pendiente), "var(--amarillo)"),
+    kpi("Total adelantado", fmtQ(adelantadoRango), "Pilotos y ayudantes · " + r.txt, "var(--azul)"),
+    kpi("Deudas pendientes (hoy)", fmtQ(deudaTotal), conDeuda + (conDeuda === 1 ? " persona debe" : " personas deben"), "var(--rojo)")
+  ].join("");
+
+  // ---- Gráfica por mes
+  dibujarMeses(cargas, fCam ? camiones.filter((c) => c.id === fCam) : camiones, colorCamion);
+
+  // ---- Tabla por camión
+  $("notaCamion").textContent = r.txt.charAt(0).toUpperCase() + r.txt.slice(1);
+  const filasCam = camiones.filter((c) => !fCam || c.id === fCam).map((c) => {
+    const suyas = cargasRango.filter((d) => d.camionId === c.id);
+    return {
+      c, n: suyas.length,
+      gal: suyas.reduce((s, d) => s + d.galones, 0),
+      total: suyas.reduce((s, d) => s + d.monto, 0),
+      pend: suyas.filter((d) => !d.pagado).reduce((s, d) => s + d.monto, 0)
+    };
+  }).sort((a, b) => b.total - a.total);
+  const maxCam = Math.max(1, ...filasCam.map((f) => f.total));
+  $("tablaCamion").innerHTML = filasCam.length === 0 ? '<div class="vacio">Aún no hay camiones registrados.</div>' : `
+    <table>
+      <thead><tr><th>Camión</th><th class="num">Cargas</th><th class="num">Galones</th><th class="num">Q / galón</th><th class="num">Total</th><th class="num">Pendiente</th><th style="width:22%"></th></tr></thead>
+      <tbody>${filasCam.map((f) => `
+        <tr>
+          <td><span class="punto" style="background:${colorCamion[f.c.id]}"></span>${esc(f.c.nombre)}${f.c.placa ? ` <span style="color:var(--gris);font-size:12px">${esc(f.c.placa)}</span>` : ""}</td>
+          <td class="num">${f.n}</td>
+          <td class="num">${fmtGal(f.gal)}</td>
+          <td class="num">${f.gal > 0 ? fmtQ(f.total / f.gal) : "—"}</td>
+          <td class="num"><b>${fmtQ(f.total)}</b></td>
+          <td class="num">${f.pend > 0 ? fmtQ(f.pend) : '<span style="color:var(--gris)">Q 0.00</span>'}</td>
+          <td><div class="barrita" title="${esc(f.c.nombre)}: ${fmtQ(f.total)}"><div style="width:${(f.total / maxCam * 100).toFixed(1)}%;background:${colorCamion[f.c.id]}"></div></div></td>
+        </tr>`).join("")}
+      </tbody>
+      <tfoot><tr><td>TOTAL</td><td class="num">${filasCam.reduce((s, f) => s + f.n, 0)}</td><td class="num">${fmtGal(filasCam.reduce((s, f) => s + f.gal, 0))}</td><td></td><td class="num">${fmtQ(filasCam.reduce((s, f) => s + f.total, 0))}</td><td class="num">${fmtQ(filasCam.reduce((s, f) => s + f.pend, 0))}</td><td></td></tr></tfoot>
+    </table>`;
+
+  // ---- Tabla de personal
+  $("notaPersonal").textContent = "Adelantos, abonos y salarios de " + r.txt + " · la columna “Debe hoy” es el saldo total a la fecha";
+  const nombreP = Object.fromEntries(pilotos.map((p) => [p.id, p.nombre]));
+  const filasP = pilotos.map((p) => {
+    const suyos = movs.filter((m) => m.pilotoId === p.id && enRango(m.fecha));
+    return {
+      p,
+      ade: suyos.filter((m) => m.tipo === "ADELANTO").reduce((s, m) => s + m.monto, 0),
+      abo: suyos.filter((m) => m.tipo === "ABONO").reduce((s, m) => s + m.monto, 0),
+      sal: suyos.filter((m) => m.tipo === "PAGO").reduce((s, m) => s + m.monto, 0),
+      debe: Math.max(0, saldo(p.id))
+    };
+  }).sort((a, b) => (a.p.tipo === b.p.tipo ? b.debe - a.debe : a.p.tipo === "AYUDANTE" ? 1 : -1));
+  $("tablaPersonal").innerHTML = filasP.length === 0 ? '<div class="vacio">Aún no hay pilotos ni ayudantes registrados.</div>' : `
+    <table>
+      <thead><tr><th>Nombre</th><th>Puesto</th><th>Camión</th><th class="num">Adelantado</th><th class="num">Abonado</th><th class="num">Salario pagado</th><th class="num">Debe hoy</th><th>Estado</th></tr></thead>
+      <tbody>${filasP.map((f) => `
+        <tr>
+          <td><b>${esc(f.p.nombre)}</b></td>
+          <td style="color:var(--texto-2)">${f.p.tipo === "AYUDANTE" ? "Ayudante" : "Piloto"}</td>
+          <td style="color:var(--texto-2)">${esc(nombreCamion[f.p.camionId] || "—")}</td>
+          <td class="num">${fmtQ(f.ade)}</td>
+          <td class="num">${fmtQ(f.abo)}</td>
+          <td class="num">${fmtQ(f.sal)}</td>
+          <td class="num"><b>${fmtQ(f.debe)}</b></td>
+          <td>${f.debe > 0 ? '<span class="estado debe">● Debe</span>' : '<span class="estado aldia">✓ Al día</span>'}</td>
+        </tr>`).join("")}
+      </tbody>
+      <tfoot><tr><td>TOTAL</td><td></td><td></td><td class="num">${fmtQ(filasP.reduce((s, f) => s + f.ade, 0))}</td><td class="num">${fmtQ(filasP.reduce((s, f) => s + f.abo, 0))}</td><td class="num">${fmtQ(filasP.reduce((s, f) => s + f.sal, 0))}</td><td class="num">${fmtQ(filasP.reduce((s, f) => s + f.debe, 0))}</td><td></td></tr></tfoot>
+    </table>`;
+
+  // ---- Deudas pendientes con sus abonos
+  const deudores = pilotos.map((p) => ({ p, s: saldo(p.id) })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s);
+  $("deudas").innerHTML = deudores.length === 0 ? '<div class="vacio">✓ Nadie debe nada en este momento.</div>' : deudores.map(({ p, s }) => {
+    const suyos = movs.filter((m) => m.pilotoId === p.id).sort((a, b) => b.fecha - a.fecha);
+    const ade = suyos.filter((m) => m.tipo === "ADELANTO");
+    const abo = suyos.filter((m) => m.tipo === "ABONO");
+    const tAde = ade.reduce((x, m) => x + m.monto, 0), tAbo = abo.reduce((x, m) => x + m.monto, 0);
+    const avance = tAde > 0 ? Math.min(100, tAbo / tAde * 100) : 0;
+    const lista = (arr, signo) => arr.length === 0 ? '<li><span style="color:var(--gris)">Ninguno</span></li>' :
+      arr.map((m) => `<li><span>${fmtFecha(m.fecha)}${m.nota ? ` · <span style="color:var(--gris)">${esc(m.nota)}</span>` : ""}</span><span class="num">${signo} ${fmtQ(m.monto)}</span></li>`).join("");
+    return `
+      <div class="deuda">
+        <div class="fila"><div><div class="nombre">${esc(p.nombre)}</div><div class="puesto">${p.tipo === "AYUDANTE" ? "Ayudante" : "Piloto"}${nombreCamion[p.camionId] ? " · " + esc(nombreCamion[p.camionId]) : ""}</div></div><div class="saldo">${fmtQ(s)}</div></div>
+        <div class="progreso" title="Ha pagado ${avance.toFixed(0)}% de lo adelantado"><div style="width:${avance.toFixed(1)}%"></div></div>
+        <div class="mini"><span>Adelantado ${fmtQ(tAde)}</span><span>Abonado ${fmtQ(tAbo)}</span></div>
+        <details><summary>Ver abonos (${abo.length})</summary><ul>${lista(abo, "−")}</ul></details>
+        <details><summary>Ver adelantos (${ade.length})</summary><ul>${lista(ade, "+")}</ul></details>
+      </div>`;
+  }).join("");
+}
+
+function kpi(etq, val, det, acento) {
+  return `<div class="kpi" style="--acento:${acento}"><span class="etq">${etq}</span><span class="val">${val}</span><span class="det">${det}</span></div>`;
+}
+
+// ---------------------------------------------------------------------
+//  Gráfica de barras apiladas: diésel por mes y por camión (SVG a mano)
+// ---------------------------------------------------------------------
+function dibujarMeses(cargas, camionesVisibles, colorCamion) {
+  const hoy = new Date();
+  const meses = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+    meses.push({ y: d.getFullYear(), m: d.getMonth(), ini: d.getTime(), fin: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() - 1 });
+  }
+  const valores = meses.map((mes) => {
+    const porCamion = {};
+    camionesVisibles.forEach((c) => porCamion[c.id] = 0);
+    cargas.forEach((d) => { if (d.fecha >= mes.ini && d.fecha <= mes.fin && porCamion[d.camionId] !== undefined) porCamion[d.camionId] += d.monto; });
+    return { mes, porCamion, total: Object.values(porCamion).reduce((s, v) => s + v, 0) };
+  });
+
+  $("leyendaMes").innerHTML = camionesVisibles.length > 1
+    ? camionesVisibles.map((c) => `<span><i style="background:${colorCamion[c.id]}"></i>${esc(c.nombre)}</span>`).join("")
+    : "";
+
+  const W = 900, H = 300, izq = 64, der = 12, arr = 14, aba = 34;
+  const ancho = W - izq - der, alto = H - arr - aba;
+  const maxV = Math.max(...valores.map((v) => v.total), 0);
+  const paso = escalaBonita(maxV);
+  const tope = Math.max(paso * 4, paso);
+  const y = (v) => arr + alto - (v / tope) * alto;
+  const col = ancho / 12, barra = Math.min(46, col * 0.62);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Diésel por mes, últimos 12 meses">`;
+  for (let i = 0; i <= 4; i++) {
+    const v = paso * i, yy = y(v);
+    svg += `<line x1="${izq}" x2="${W - der}" y1="${yy}" y2="${yy}" stroke="${i === 0 ? "#475569" : "#2b3a52"}" stroke-width="1"/>`;
+    svg += `<text x="${izq - 10}" y="${yy + 4}" text-anchor="end" font-size="12" fill="#94A3B8">${fmtQcorto(v)}</text>`;
+  }
+  const iMax = valores.findIndex((v) => v.total > 0 && v.total === maxV);
+  valores.forEach((v, i) => {
+    const cx = izq + col * i + col / 2, x = cx - barra / 2;
+    let base = 0;
+    const segs = camionesVisibles.filter((c) => v.porCamion[c.id] > 0);
+    segs.forEach((c, k) => {
+      const val = v.porCamion[c.id];
+      const y1 = y(base + val), y0 = y(base);
+      const h = Math.max(0, y0 - y1 - (k < segs.length - 1 ? 2 : 0)); // 2px de separación entre segmentos
+      const top = k === segs.length - 1;
+      svg += top ? `<path d="${rectArriba(x, y1, barra, y0 - y1, 4)}" fill="${colorCamion[c.id]}"/>`
+                 : `<rect x="${x}" y="${y1 + 2}" width="${barra}" height="${h}" fill="${colorCamion[c.id]}"/>`;
+      base += val;
+    });
+    const etq = MESES[v.mes.m] + (v.mes.m === 0 || i === 0 ? " " + String(v.mes.y).slice(2) : "");
+    svg += `<text x="${cx}" y="${H - 12}" text-anchor="middle" font-size="12" fill="#94A3B8">${etq}</text>`;
+    if (i === iMax) {
+      svg += `<text x="${cx}" y="${y(v.total) - 6}" text-anchor="middle" font-size="11" font-weight="700" fill="#CBD5E1">${fmtQcorto(v.total)}</text>`;
+    }
+    svg += `<rect class="zona" data-i="${i}" x="${izq + col * i}" y="${arr}" width="${col}" height="${alto}" fill="transparent"/>`;
+  });
+  svg += "</svg>";
+  if (maxV === 0) svg += '<div class="vacio">Aún no hay cargas de diésel en los últimos 12 meses.</div>';
+  $("graficaMes").innerHTML = svg;
+
+  const tt = $("tooltip");
+  $("graficaMes").querySelectorAll(".zona").forEach((z) => {
+    z.addEventListener("mousemove", (e) => {
+      const v = valores[+z.dataset.i];
+      tt.innerHTML = `<div class="t">${MESES[v.mes.m]} ${v.mes.y}</div>` +
+        camionesVisibles.filter((c) => v.porCamion[c.id] > 0).map((c) =>
+          `<div class="r"><span><i class="punto" style="background:${colorCamion[c.id]};margin:0"></i>${esc(c.nombre)}</span><span>${fmtQ(v.porCamion[c.id])}</span></div>`).join("") +
+        `<div class="r total"><span>Total</span><span>${fmtQ(v.total)}</span></div>`;
+      tt.hidden = false;
+      const px = Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 8);
+      tt.style.left = px + "px";
+      tt.style.top = Math.max(8, e.clientY - tt.offsetHeight - 10) + "px";
+      z.setAttribute("fill", "rgba(148,163,184,0.08)");
+    });
+    z.addEventListener("mouseleave", () => { tt.hidden = true; z.setAttribute("fill", "transparent"); });
+  });
+}
+
+function escalaBonita(max) {
+  if (max <= 0) return 1000;
+  const bruto = max / 4, mag = Math.pow(10, Math.floor(Math.log10(bruto)));
+  for (const f of [1, 2, 2.5, 5, 10]) if (f * mag >= bruto) return f * mag;
+  return 10 * mag;
+}
+function rectArriba(x, y, w, h, r) {
+  r = Math.min(r, h, w / 2);
+  return `M${x},${y + h} L${x},${y + r} Q${x},${y} ${x + r},${y} L${x + w - r},${y} Q${x + w},${y} ${x + w},${y + r} L${x + w},${y + h} Z`;
+}
+
+$("fPeriodo").addEventListener("change", dibujar);
+$("fCamion").addEventListener("change", dibujar);
+
+// ---------------------------------------------------------------------
+//  Datos de ejemplo (para ver el diseño): abre la página con #demo
+// ---------------------------------------------------------------------
+function cargarDemo() {
+  const hoy = new Date(), d = (mAtras, dia) => new Date(hoy.getFullYear(), hoy.getMonth() - mAtras, dia, 10).getTime();
+  datos.camiones = [{ id: "c1", nombre: "Camión 1", placa: "C-123ABC" }, { id: "c2", nombre: "Camión 2", placa: "C-456DEF" }, { id: "c3", nombre: "Camión 3", placa: "C-789GHI" }];
+  datos.pilotos = [
+    { id: "p1", nombre: "Carlos", camionId: "c1", tipo: "PILOTO" }, { id: "p2", nombre: "Luis", camionId: "c2", tipo: "PILOTO" },
+    { id: "p3", nombre: "Mario", camionId: "c3", tipo: "PILOTO" }, { id: "p4", nombre: "Pedro", camionId: "c1", tipo: "AYUDANTE" }
+  ];
+  const diesel = [];
+  for (let m = 11; m >= 0; m--) for (const [cid, base] of [["c1", 5200], ["c2", 4300], ["c3", 3100]]) {
+    const n = 3;
+    for (let k = 0; k < n; k++) {
+      const gal = 30 + ((m * 7 + k * 5 + cid.length) % 12);
+      const monto = Math.round((base / n) * (0.8 + ((m * 13 + k * 3) % 9) / 20));
+      if (m === 0 && k === 2) continue;
+      diesel.push({ camionId: cid, fecha: d(m, 3 + k * 8), galones: gal, monto, pagado: m > 0 || k === 0 });
+    }
+  }
+  datos.diesel = diesel;
+  datos.movimientos = [
+    { pilotoId: "p1", tipo: "ADELANTO", monto: 2500, fecha: d(1, 20), nota: "Transferencia" },
+    { pilotoId: "p1", tipo: "ABONO", monto: 1000, fecha: d(0, 1), nota: "" },
+    { pilotoId: "p1", tipo: "ADELANTO", monto: 1500, fecha: d(0, 8), nota: "Efectivo" },
+    { pilotoId: "p1", tipo: "ABONO", monto: 300, fecha: d(0, 15), nota: "Descuento de viaje" },
+    { pilotoId: "p2", tipo: "ADELANTO", monto: 800, fecha: d(0, 5), nota: "" },
+    { pilotoId: "p2", tipo: "ABONO", monto: 800, fecha: d(0, 15), nota: "Descontado del salario" },
+    { pilotoId: "p2", tipo: "PAGO", monto: 2200, fecha: d(0, 15), nota: "Salario" },
+    { pilotoId: "p4", tipo: "ADELANTO", monto: 500, fecha: d(0, 10), nota: "Efectivo" },
+    { pilotoId: "p3", tipo: "PAGO", monto: 3000, fecha: d(0, 15), nota: "Salario" }
+  ];
+  $("avisoDemo").hidden = false;
+  $("botonSalir").hidden = true;
+  mostrar("vistaPanel");
+  dibujar();
+}
+
+// ---------------------------------------------------------------------
+//  Firebase: login + lectura en tiempo real (solo lectura, nunca escribe)
+// ---------------------------------------------------------------------
+async function iniciarFirebase() {
+  const [{ initializeApp }, authMod, fsMod] = await Promise.all([
+    import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")
+  ]);
+  const { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } = authMod;
+  const { getFirestore, doc, getDoc, collection, onSnapshot } = fsMod;
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app), db = getFirestore(app);
+  let escuchas = [];
+
+  const salir = () => { escuchas.forEach((u) => u()); escuchas = []; signOut(auth); };
+  $("botonSalir").onclick = salir;
+  $("botonSalir2").onclick = salir;
+
+  $("formLogin").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const u = $("usuario").value.trim().toLowerCase();
+    $("errorLogin").textContent = "";
+    $("botonEntrar").disabled = true;
+    try {
+      await signInWithEmailAndPassword(auth, u + DOMINIO_USUARIOS, $("clave").value);
+    } catch (err) {
+      const c = err.code || "";
+      $("errorLogin").textContent = c.includes("invalid") || c.includes("wrong") || c.includes("not-found")
+        ? "Usuario o contraseña incorrectos" : c.includes("network") ? "Sin internet" : "No se pudo entrar (" + c + ")";
+    }
+    $("botonEntrar").disabled = false;
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    escuchas.forEach((u) => u()); escuchas = [];
+    if (!user) { mostrar("vistaLogin"); return; }
+    mensaje("Cargando…", "");
+    try {
+      const empresa = doc(db, "empresa", "principal");
+      const e = await getDoc(empresa);
+      const esMaster = e.exists() && e.data().master === user.uid;
+      if (!esMaster) {
+        const miembro = await getDoc(doc(db, "empresa", "principal", "miembros", user.uid));
+        if (!miembro.exists()) { mensaje("Sin acceso todavía", "Tu usuario aún no ha sido aprobado por el máster. Pídele que te apruebe en la app (Inicio → Usuarios)."); return; }
+      }
+      const nombre = user.email.replace(DOMINIO_USUARIOS, "");
+      const escuchar = (col, mapear) => escuchas.push(onSnapshot(collection(db, "empresa", "principal", col), (snap) => {
+        datos[col] = snap.docs.map((d) => mapear(d.id, d.data()));
+        if (col === "camiones" || col === "pilotos") datos[col].sort((a, b) => a.nombre.localeCompare(b.nombre));
+        dibujar();
+      }, () => mensaje("No se pudieron leer los datos", "Revisa tu conexión o tus permisos.")));
+      escuchar("camiones", (id, x) => ({ id, nombre: x.nombre || "", placa: x.placa || "" }));
+      escuchar("pilotos", (id, x) => ({ id, nombre: x.nombre || "", camionId: x.camionId || "", tipo: x.tipo || "PILOTO" }));
+      escuchar("diesel", (id, x) => ({ id, camionId: x.camionId || "", fecha: x.fecha || 0, galones: x.galones || 0, monto: x.monto || 0, pagado: !!x.pagado }));
+      escuchar("movimientos", (id, x) => ({ id, pilotoId: x.pilotoId || "", tipo: x.tipo || "", monto: x.monto || 0, fecha: x.fecha || 0, nota: x.nota || "" }));
+      mostrar("vistaPanel");
+      $("subtitulo").textContent = "Panel de consulta · " + nombre + (esMaster ? " (máster)" : "");
+      dibujar();
+    } catch (err) {
+      mensaje("No se pudo cargar", String(err.message || err));
+    }
+  });
+}
+
+if (location.hash === "#demo" || !firebaseConfig.apiKey) {
+  cargarDemo();
+} else {
+  iniciarFirebase().catch((e) => mensaje("No se pudo conectar", String(e.message || e)));
+}
+</script>
+</body>
+</html>
