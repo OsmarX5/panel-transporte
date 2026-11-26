@@ -190,6 +190,14 @@
   #tooltip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--texto-2); }
   #tooltip .total { border-top: 1px solid var(--borde); margin-top: 6px; padding-top: 6px; font-weight: 700; }
 
+  .grupo { margin-top: 14px; }
+  .grupo-cab { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 2px; font-size: 15px; }
+  .grupo-cab .cuenta { margin-left: auto; font-size: 13px; }
+  .grupo .tabla tfoot td { color: var(--texto); }
+  .gran-total { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 14px 18px; border-radius: 14px; background: linear-gradient(90deg, #FBBF24, #F59E0B); color: #0F172A; font-weight: 800; box-shadow: 0 0 22px rgba(251,191,36,.35); }
+  .gran-total b { font-size: 20px; }
+  .gran-total.morado { background: linear-gradient(90deg, #A78BFA, #8B5CF6); color: #1E1B4B; box-shadow: 0 0 22px rgba(139,92,246,.35); }
+
   /* ================= Estilo futurista (vidrio + neón) ================= */
   body { background: var(--cielo-3); font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   h1, h2, .marca b, .kpi .val, .titulo-neon { font-family: "Space Grotesk", Inter, sans-serif; }
@@ -500,7 +508,8 @@ function contexto() {
   const nombreCamion = Object.fromEntries(camiones.map((c) => [c.id, c.nombre]));
   const nombrePersona = Object.fromEntries(pilotos.map((p) => [p.id, p.nombre]));
   const duenoDe = Object.fromEntries(camiones.map((c) => [c.id, (c.dueno || "").trim() || SIN_DUENO]));
-  const duenos = [...new Map(camiones.filter((c) => (c.dueno || "").trim()).map((c) => [c.dueno.trim().toLowerCase(), c.dueno.trim()])).values()].sort((a, b) => a.localeCompare(b));
+  const nombresDueno = [...camiones.map((c) => (c.dueno || "").trim()), ...movimientos.filter((m) => m.tipo === "GASTO" && esDirecto(m)).map((m) => m.dueno.trim())].filter(Boolean);
+  const duenos = [...new Map(nombresDueno.map((d) => [d.toLowerCase(), d])).values()].sort((a, b) => a.localeCompare(b));
 
   // Selector de dueños
   const selD = $("fDueno"), elegD = selD.value;
@@ -525,12 +534,49 @@ function contexto() {
   const cargas = diesel.filter((d) => !filtrandoCamion || idsVisibles.has(d.camionId));
   const cargasRango = cargas.filter((d) => enRango(d.fecha));
   const movs = movimientos.filter((m) => m.tipo === "ADELANTO" || m.tipo === "ABONO" || m.tipo === "PAGO");
-  const gastos = movimientos.filter((m) => m.tipo === "GASTO" && (!filtrandoCamion || idsVisibles.has(m.camionId)));
+  const gastos = movimientos.filter((m) => m.tipo === "GASTO" && (esDirecto(m)
+    ? !fCam && (!fDue || mismo(m.dueno, fDue))
+    : !filtrandoCamion || idsVisibles.has(m.camionId)));
   const gastosRango = gastos.filter((g) => enRango(g.fecha));
   const saldo = (pid) => suma(movs.filter((m) => m.pilotoId === pid), (m) => m.tipo === "ADELANTO" ? m.monto : m.tipo === "ABONO" ? -m.monto : 0);
   const camionDePersona = Object.fromEntries(pilotos.map((p) => [p.id, p.camionId]));
   const camionDeMov = (m) => m.camionId || camionDePersona[m.pilotoId] || "";
   return { camiones, pilotos, P, colorCamion, nombreCamion, nombrePersona, duenoDe, duenos, fDue, fCam, r, enRango, cargas, cargasRango, movs, gastos, gastosRango, saldo, camionesVisibles, idsVisibles, camionDeMov };
+}
+
+// Gasto entregado directo al dueño (sin camión)
+function esDirecto(g) { return !!(g.dueno && g.dueno.trim() && !g.camionId); }
+function mismo(a, b) { return (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase(); }
+
+/** Agrupa los gastos: uno por camión, uno por dueño para lo directo, y "Sin camión" al final */
+function agruparGastos(k, lista) {
+  const ord = [...lista].sort((a, b) => a.fecha - b.fecha);
+  const grupos = [];
+  [...k.camiones].sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach((c) => {
+    const suyos = ord.filter((g) => g.camionId === c.id && !esDirecto(g));
+    if (suyos.length) grupos.push({ titulo: c.nombre, det: [c.placa, c.dueno].filter(Boolean).join(" · "), lista: suyos, color: k.colorCamion[c.id] });
+  });
+  const dir = new Map();
+  ord.filter(esDirecto).forEach((g) => { const key = g.dueno.trim().toLowerCase(); if (!dir.has(key)) dir.set(key, []); dir.get(key).push(g); });
+  dir.forEach((l) => grupos.push({ titulo: "Directo al dueño", det: l[0].dueno.trim(), lista: l, color: k.P.salario, directo: true }));
+  const ids = new Set(k.camiones.map((c) => c.id));
+  const sueltos = ord.filter((g) => !esDirecto(g) && !ids.has(g.camionId));
+  if (sueltos.length) grupos.push({ titulo: "Sin camión", det: "Gastos generales", lista: sueltos, color: "#94A3B8" });
+  grupos.forEach((g) => g.total = suma(g.lista, (x) => x.monto));
+  return grupos;
+}
+
+/** Detalle agrupado: cada grupo con su tabla y subtotal, y el gran total al final */
+function gruposHTML(k, grupos, etiqueta = "GRAN TOTAL") {
+  if (!grupos.length) return '<div class="vacio">Sin gastos en este periodo.</div>';
+  return grupos.map((gr) => `<div class="grupo">
+    <div class="grupo-cab"><span class="punto" style="background:${gr.color}"></span><b>${esc(gr.titulo)}</b>${gr.det ? `<span class="tenue">${esc(gr.det)}</span>` : ""}<span class="tenue cuenta">${gr.lista.length} ${gr.lista.length === 1 ? "gasto" : "gastos"}</span></div>
+    <div class="tabla"><table>
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Gasto</th><th>Se le dio a</th><th class="num">Monto</th></tr></thead>
+      <tbody>${gr.lista.map((g) => `<tr><td>${fmtFecha(g.fecha)}</td><td><span class="chip" style="background:${colorCat(g.categoria)}">${nombreCat(g.categoria)}</span></td><td><b>${esc(g.titulo)}</b>${g.nota ? `<br><span class="tenue" style="font-size:12px">${esc(g.nota)}</span>` : ""}</td><td>${esc(k.nombrePersona[g.pilotoId] || "—")}</td><td class="num">${fmtQ(g.monto)}</td></tr>`).join("")}</tbody>
+      <tfoot><tr><td>Subtotal</td><td></td><td></td><td></td><td class="num">${fmtQ(gr.total)}</td></tr></tfoot>
+    </table></div>
+  </div>`).join("") + `<div class="gran-total"><span>${etiqueta}</span><b>${fmtQ(suma(grupos, (g) => g.total))}</b></div>`;
 }
 
 // ---------------- Dibujar la sección elegida ----------------
@@ -565,10 +611,10 @@ function porDueno(k) {
   return nombres.map((d) => {
     const ids = new Set(k.camiones.filter((c) => k.duenoDe[c.id].toLowerCase() === d.toLowerCase()).map((c) => c.id));
     const diesel = suma(k.cargasRango.filter((x) => ids.has(x.camionId)), (x) => x.monto);
-    const gastos = suma(k.gastosRango.filter((x) => ids.has(x.camionId)), (x) => x.monto);
+    const gastos = suma(k.gastosRango.filter((x) => esDirecto(x) ? d !== SIN_DUENO && mismo(x.dueno, d) : ids.has(x.camionId)), (x) => x.monto);
     const adelantos = suma(k.movs.filter((m) => m.tipo === "ADELANTO" && k.enRango(m.fecha) && ids.has(k.camionDeMov(m))), (m) => m.monto);
     return { nombre: d, camiones: ids.size, diesel, gastos, adelantos, total: diesel + gastos + adelantos };
-  }).filter((f) => f.camiones > 0 && (f.nombre !== SIN_DUENO || f.total > 0)).sort((a, b) => b.total - a.total);
+  }).filter((f) => (f.camiones > 0 || f.total > 0) && (f.nombre !== SIN_DUENO || f.total > 0)).sort((a, b) => b.total - a.total);
 }
 
 // ---------- INICIO ----------
@@ -656,8 +702,13 @@ function vistaGastos(k) {
   const lista = k.gastosRango.filter((g) => !fCat || g.categoria === fCat);
   const total = suma(lista, (g) => g.monto);
   const cats = fCat ? CATEGORIAS.filter((c) => c.id === fCat) : CATEGORIAS;
-  const filasCam = [...k.camionesVisibles.map((c) => ({ id: c.id, nombre: c.nombre })), { id: "", nombre: "Sin camión" }].map((c) => {
-    const suyos = lista.filter((g) => (g.camionId || "") === c.id);
+  const directosDe = [...new Map(lista.filter(esDirecto).map((g) => [g.dueno.trim().toLowerCase(), g.dueno.trim()])).values()];
+  const filasCam = [
+    ...k.camionesVisibles.map((c) => ({ nombre: c.nombre, es: (g) => !esDirecto(g) && g.camionId === c.id })),
+    ...directosDe.map((d) => ({ nombre: "Directo · " + d, es: (g) => esDirecto(g) && mismo(g.dueno, d) })),
+    { nombre: "Sin camión", es: (g) => !esDirecto(g) && !g.camionId }
+  ].map((c) => {
+    const suyos = lista.filter(c.es);
     return { c, porCat: Object.fromEntries(cats.map((x) => [x.id, suma(suyos.filter((g) => g.categoria === x.id), (g) => g.monto)])), total: suma(suyos, (g) => g.monto) };
   }).filter((f) => f.total > 0).sort((a, b) => b.total - a.total);
   const detalle = [...lista].sort((a, b) => b.fecha - a.fecha);
@@ -674,7 +725,7 @@ function vistaGastos(k) {
       ${graficaMeses("gastos", series.map((s) => ({ ...s, items: k.gastos.filter((g) => g.categoria === s.id) })))}
     </div>
     <div class="tarjeta">
-      <h2>Gastos por camión</h2>
+      <h2>Gastos por camión y dueño</h2>
       <p class="nota">${esc(k.r.txt)} · por tipo de gasto</p>
       ${barrasH("gastosCam", filasCam.map((f) => ({ nombre: f.c.nombre, valores: f.porCat })), series)}
       ${verTabla(filasCam.length === 0 ? '<div class="vacio">Sin gastos en este periodo.</div>' : `<div class="tabla"><table>
@@ -684,11 +735,9 @@ function vistaGastos(k) {
       </table></div>`)}
     </div>
     <div class="tarjeta">
-      <h2>Detalle de gastos</h2>
-      ${verTabla(tablaDetalle("gastos", detalle,
-        ["Fecha", "Tipo", "Gasto", "Camión", "Se le dio a", "Monto"], [false, false, false, false, false, true],
-        (g) => [fmtFecha(g.fecha), `<span class="chip" style="background:${colorCat(g.categoria)}">${nombreCat(g.categoria)}</span>`, `<b>${esc(g.titulo)}</b>${g.nota ? `<br><span class="tenue" style="font-size:12px">${esc(g.nota)}</span>` : ""}`, esc(k.nombreCamion[g.camionId] || "—"), esc(k.nombrePersona[g.pilotoId] || "—"), `<b>${fmtQ(g.monto)}</b>`],
-        "Sin gastos en este periodo.", [fmtQ(total)]), false)}
+      <h2>Detalle por camión</h2>
+      <p class="nota">${esc(k.r.txt)}${k.fDue ? " · " + esc(k.fDue) : ""} · cada camión con sus gastos, lo entregado directo al dueño y el gran total</p>
+      ${gruposHTML(k, agruparGastos(k, lista))}
     </div>`;
 }
 
@@ -703,7 +752,12 @@ function vistaDuenos(k) {
     const gastos = suma(k.gastosRango.filter((x) => x.camionId === c.id), (x) => x.monto);
     const adelantos = suma(k.movs.filter((m) => m.tipo === "ADELANTO" && k.enRango(m.fecha) && k.camionDeMov(m) === c.id), (m) => m.monto);
     return { nombre: c.nombre, diesel, gastos, adelantos, total: diesel + gastos + adelantos };
-  }).sort((a, b) => b.total - a.total) : [];
+  }) : [];
+  if (k.fDue) {
+    const dir = suma(k.gastosRango.filter((g) => esDirecto(g) && mismo(g.dueno, k.fDue)), (g) => g.monto);
+    if (dir > 0) porCamion.push({ nombre: "Directo al dueño", diesel: 0, gastos: dir, adelantos: 0, total: dir });
+    porCamion.sort((a, b) => b.total - a.total);
+  }
   const tabla = (lista, col) => `<div class="tabla"><table>
     <thead><tr><th>${col}</th><th class="num">Diésel</th><th class="num">Gastos</th><th class="num">Adelantos</th><th class="num">Total</th></tr></thead>
     <tbody>${lista.map((f) => `<tr><td><b>${esc(f.nombre)}</b>${f.camiones ? ` <span class="tenue" style="font-size:12px">${f.camiones} ${f.camiones === 1 ? "camión" : "camiones"}</span>` : ""}</td><td class="num">${fmtQ(f.diesel)}</td><td class="num">${fmtQ(f.gastos)}</td><td class="num">${fmtQ(f.adelantos)}</td><td class="num"><b>${fmtQ(f.total)}</b></td></tr>`).join("")}</tbody>
@@ -722,11 +776,42 @@ function vistaDuenos(k) {
       ${barrasH("duenos", (k.fDue ? porCamion : filas).map((f) => ({ nombre: f.nombre, valores: { d: f.diesel, g: f.gastos, a: f.adelantos } })), series)}
       ${verTabla(k.fDue ? tabla(porCamion, "Camión") : tabla(filas, "Dueño"))}
     </div>
+    ${k.fDue ? detalleDueno(k) : ""}
     ${k.fDue ? "" : `<div class="tarjeta">
       <h2>Diésel por mes de cada dueño</h2>
       <p class="nota">Últimos 12 meses</p>
       ${graficaMeses("duenosMes", filas.map((f, i) => ({ id: "d" + i, nombre: f.nombre, color: k.P.serie[i % k.P.serie.length], items: k.cargas.filter((c) => k.duenoDe[c.camionId].toLowerCase() === f.nombre.toLowerCase()) })))}
     </div>`}`;
+}
+
+/** Todo el detalle de un dueño: diésel, gastos agrupados y adelantos */
+function detalleDueno(k) {
+  const ids = new Set(k.camionesVisibles.map((c) => c.id));
+  const cargas = k.cargasRango.filter((x) => ids.has(x.camionId)).sort((a, b) => a.fecha - b.fecha);
+  const gastos = k.gastosRango.filter((g) => esDirecto(g) ? mismo(g.dueno, k.fDue) : ids.has(g.camionId));
+  const adel = k.movs.filter((m) => m.tipo === "ADELANTO" && k.enRango(m.fecha) && ids.has(k.camionDeMov(m))).sort((a, b) => a.fecha - b.fecha);
+  const total = suma(cargas, (x) => x.monto) + suma(gastos, (x) => x.monto) + suma(adel, (x) => x.monto);
+  return `
+    <div class="tarjeta">
+      <h2>Detalle de diésel</h2>
+      <p class="nota">${esc(k.r.txt)} · ${cargas.length} cargas · ${fmtGal(suma(cargas, (x) => x.galones))} galones</p>
+      ${tablaDetalle("dueDiesel", cargas, ["Fecha", "Camión", "Galones", "Estado", "Total"], [false, false, true, false, true],
+        (d) => [fmtFecha(d.fecha), `<span class="punto" style="background:${k.colorCamion[d.camionId] || "#94A3B8"}"></span>${esc(k.nombreCamion[d.camionId] || "Camión eliminado")}`, fmtGal(d.galones), d.pagado ? '<span class="tenue">Pagado</span>' : "<b>Pendiente</b>", `<b>${fmtQ(d.monto)}</b>`],
+        "Sin cargas de diésel en este periodo.", [fmtQ(suma(cargas, (x) => x.monto))])}
+    </div>
+    <div class="tarjeta">
+      <h2>Detalle de gastos</h2>
+      <p class="nota">Por camión, más lo entregado directo al dueño</p>
+      ${gruposHTML(k, agruparGastos(k, gastos), "TOTAL EN GASTOS")}
+    </div>
+    <div class="tarjeta">
+      <h2>Detalle de adelantos</h2>
+      <p class="nota">Al personal de sus camiones</p>
+      ${tablaDetalle("dueAdel", adel, ["Fecha", "Persona", "Camión", "Nota", "Monto"], [false, false, false, false, true],
+        (m) => [fmtFecha(m.fecha), `<b>${esc(k.nombrePersona[m.pilotoId] || "Persona eliminada")}</b>`, esc(k.nombreCamion[k.camionDeMov(m)] || "—"), `<span class="tenue">${esc(m.nota || "")}</span>`, `<b>${fmtQ(m.monto)}</b>`],
+        "Sin adelantos en este periodo.", [fmtQ(suma(adel, (m) => m.monto))])}
+    </div>
+    <div class="gran-total morado"><span>TOTAL DE ${esc(k.fDue.toUpperCase())}</span><b>${fmtQ(total)}</b></div>`;
 }
 
 // ---------- PERSONAL ----------
@@ -981,6 +1066,9 @@ function cargarDemo() {
     if (m % 4 === 1) movs.push({ tipo: "GASTO", categoria: "OTRO", titulo: "Lavado de camión", nota: "", monto: 150, fecha: d(m, 20), camionId: "c4", pilotoId: "" });
   }
   movs.push(
+    { tipo: "GASTO", categoria: "OTRO", titulo: "Efectivo para el dueño", nota: "Lo pidió en efectivo", monto: 500, fecha: d(0, 12), dueno: "Juan" },
+    { tipo: "GASTO", categoria: "OTRO", titulo: "Compra en el súper", nota: "", monto: 1470, fecha: d(0, 18), dueno: "Juan" },
+    { tipo: "GASTO", categoria: "OTRO", titulo: "Efectivo para el dueño", nota: "", monto: 800, fecha: d(0, 7), dueno: "Pedro" },
     { pilotoId: "p1", tipo: "ADELANTO", monto: 2500, fecha: d(1, 20), nota: "Transferencia" },
     { pilotoId: "p1", tipo: "ABONO", monto: 1000, fecha: d(0, 1), nota: "" },
     { pilotoId: "p1", tipo: "ADELANTO", monto: 1500, fecha: d(0, 8), nota: "Efectivo" },
@@ -993,7 +1081,7 @@ function cargarDemo() {
     { pilotoId: "p3", tipo: "PAGO", monto: 3000, fecha: d(0, 15), nota: "Salario" }
   );
   datos.diesel = diesel;
-  datos.movimientos = movs.map((m) => ({ camionId: "", categoria: "", titulo: "", pilotoId: "", ...m }));
+  datos.movimientos = movs.map((m) => ({ camionId: "", categoria: "", titulo: "", pilotoId: "", dueno: "", ...m }));
   $("avisoDemo").hidden = false;
   $("botonSalir").hidden = true;
   $("usuarioLateral").textContent = "Datos de ejemplo";
@@ -1064,7 +1152,7 @@ async function iniciarFirebase() {
       escuchar("camiones", (id, x) => ({ id, nombre: x.nombre || "", placa: x.placa || "", dueno: x.dueno || "" }));
       escuchar("pilotos", (id, x) => ({ id, nombre: x.nombre || "", camionId: x.camionId || "", tipo: x.tipo || "PILOTO", salario: x.salario || 0 }));
       escuchar("diesel", (id, x) => ({ id, camionId: x.camionId || "", fecha: x.fecha || 0, galones: x.galones || 0, monto: x.monto || 0, pagado: !!x.pagado }));
-      escuchar("movimientos", (id, x) => ({ id, pilotoId: x.pilotoId || "", tipo: x.tipo || "", monto: x.monto || 0, fecha: x.fecha || 0, nota: x.nota || "", categoria: x.categoria || "OTRO", titulo: x.titulo || "", camionId: x.camionId || "" }));
+      escuchar("movimientos", (id, x) => ({ id, pilotoId: x.pilotoId || "", tipo: x.tipo || "", monto: x.monto || 0, fecha: x.fecha || 0, nota: x.nota || "", categoria: x.categoria || "OTRO", titulo: x.titulo || "", camionId: x.camionId || "", dueno: x.dueno || "" }));
       $("usuarioLateral").textContent = user.email.replace(DOMINIO_USUARIOS, "") + (esMaster ? " · máster" : "");
       mostrar("vistaPanel");
       pintarMenu();
