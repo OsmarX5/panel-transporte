@@ -192,6 +192,8 @@
   #tooltip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--texto-2); }
   #tooltip .total { border-top: 1px solid var(--borde); margin-top: 6px; padding-top: 6px; font-weight: 700; }
 
+  .plan-cuota { margin: 10px 0 4px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(139,92,246,.35); background: rgba(139,92,246,.08); }
+  .deuda .progreso.morado div { background: #8B5CF6; }
   .grupo { margin-top: 14px; }
   .grupo-cab { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 2px; font-size: 15px; }
   .grupo-cab .cuenta { margin-left: auto; font-size: 13px; }
@@ -914,7 +916,7 @@ function boletasDe(k, personas) {
     const suyos = k.movs.filter((m) => m.pilotoId === p.id).sort((a, b) => a.fecha - b.fecha);
     const pagos = suyos.filter((m) => m.tipo === "PAGO");
     pagos.filter((m) => k.enRango(m.fecha)).forEach((pago) => {
-      const desc = suma(suyos.filter((m) => m.tipo === "ABONO" && m.nota === "Descontado del salario" && m.fecha >= pago.fecha - 1000 && m.fecha <= pago.fecha), (m) => m.monto);
+      const desc = suma(suyos.filter((m) => m.tipo === "ABONO" && (m.nota || "").startsWith("Descontado del salario") && m.fecha >= pago.fecha - 1000 && m.fecha <= pago.fecha), (m) => m.monto);
       const ant = Math.max(-Infinity, ...pagos.filter((x) => x.fecha < pago.fecha).map((x) => x.fecha));
       const periodo = suyos.filter((m) => (m.tipo === "ADELANTO" || m.tipo === "ABONO") && m.fecha > ant && m.fecha <= pago.fecha);
       const queda = suma(suyos.filter((m) => m.fecha <= pago.fecha), (m) => m.tipo === "ADELANTO" ? m.monto : m.tipo === "ABONO" ? -m.monto : 0);
@@ -1011,6 +1013,29 @@ function repDuenos(k) {
 }
 
 
+// ---------- Adelantos en cuotas ----------
+function planesDe(movs, pid) {
+  return movs.filter((m) => m.pilotoId === pid && m.tipo === "ADELANTO" && (m.cuotas || 0) > 1).sort((a, b) => a.fecha - b.fecha).map((a) => {
+    const pagado = suma(movs.filter((m) => m.tipo === "ABONO" && m.planId && m.planId === a.id), (m) => m.monto);
+    const cuota = a.montoCuota > 0 ? a.montoCuota : a.monto / Math.max(1, a.cuotas);
+    const cuotasTotal = Math.max(a.cuotas, Math.ceil(a.monto / cuota - 1e-6));
+    const restante = Math.max(0, a.monto - pagado);
+    const pagadas = Math.min(cuotasTotal, Math.floor((pagado + 0.005) / cuota));
+    return { a, nombre: a.nota || etiquetaMov(a), total: a.monto, pagado, cuota, cuotasTotal, restante, pagadas, siguiente: Math.min(cuota, restante), activo: restante > 0.005, num: Math.min(cuotasTotal, pagadas + 1) };
+  });
+}
+function textoCuota(p, x) {
+  const n = Math.max(1, Math.round(x / p.cuota));
+  return n <= 1 ? `Cuota ${p.num} de ${p.cuotasTotal}` : `Cuotas ${p.num} a ${Math.min(p.cuotasTotal, p.num + n - 1)} de ${p.cuotasTotal}`;
+}
+function repartir(desc, planes, normal) {
+  let r = desc; const partes = new Map();
+  planes.filter((p) => p.activo).forEach((p) => { const x = Math.min(r, p.siguiente); if (x > 0.004) { partes.set(p, x); r -= x; } });
+  const n = Math.min(r, normal); r -= n;
+  if (r > 0.004) planes.filter((p) => p.activo).forEach((p) => { const ya = partes.get(p) || 0, ex = Math.min(r, p.restante - ya); if (ex > 0.004) { partes.set(p, ya + ex); r -= ex; } });
+  return { cuotas: [...partes.entries()], normal: n + Math.max(0, r) };
+}
+
 // ---------- Por pagar (pre-planilla): lo que lleva cada persona desde su último pago ----------
 function prePagosDe(k, personas) {
   const corte = Date.now();
@@ -1023,8 +1048,11 @@ function prePagosDe(k, personas) {
     const movsP = suyos.filter((m) => (m.tipo === "ADELANTO" || m.tipo === "ABONO") && m.fecha > desde);
     const adel = suma(movsP.filter((m) => m.tipo === "ADELANTO"), (m) => m.monto), abon = suma(movsP.filter((m) => m.tipo === "ABONO"), (m) => m.monto);
     const salario = Number(p.salario) || 0;
-    const debe = Math.max(0, antes + adel - abon), descuento = Math.min(debe, Math.max(0, salario));
-    return { p, ultimo, antes, movs: movsP, adel, abon, salario, debe, descuento, recibe: salario - descuento, queda: debe - descuento, corte };
+    const planes = planesDe(k.movs, p.id).filter((x) => x.activo);
+    const debe = Math.max(0, antes + adel - abon), normal = Math.max(0, debe - suma(planes, (x) => x.restante));
+    const descuento = Math.min(Math.max(0, salario), normal + suma(planes, (x) => x.siguiente));
+    const reparto = repartir(descuento, planes, normal);
+    return { p, ultimo, antes, movs: movsP, adel, abon, salario, debe, descuento, reparto, planes, recibe: salario - descuento, queda: debe - descuento, corte };
   }).sort((a, b) => a.p.nombre.localeCompare(b.p.nombre));
 }
 
@@ -1049,6 +1077,7 @@ function repPorPagar(k) {
     filas.push(["+ Adelantos desde el último pago", cQ(x.adel, { color: CH.azul })]);
     if (x.abon > 0) filas.push(["− Abonos", cQ(x.abon, { color: CH.verde })]);
     filas.push([cT("= Debe en total", { b: true }), cQ(x.debe, { color: CH.rojo, b: true })]);
+    x.reparto.cuotas.forEach(([pl, v]) => filas.push([cT("   " + textoCuota(pl, v) + " · " + pl.nombre + " (faltan " + fmtQ(pl.restante - v) + " después)", { color: CH.gris }), cQ(v, { color: CH.morado })]));
     filas.push(["− Descuento del salario", cQ(x.descuento, { color: CH.morado })]);
     if (x.queda > 0) filas.push([cT("Seguiría debiendo", { color: CH.gris }), cQ(x.queda, { color: CH.rojo })]);
     tablaDoc(d, ["Concepto", "Monto"], [0, 1], filas, ["LE TOCA RECIBIR", cQ(x.recibe, { color: CH.verde })]);
@@ -1068,7 +1097,9 @@ function imagenPrePago(k, x) {
   if (x.antes > 0) conceptos.push(["Debía del pago anterior", x.antes, AZUL]);
   conceptos.push(["+ Adelantos", x.adel, AZUL]);
   if (x.abon > 0) conceptos.push(["− Abonos", x.abon, VERDE]);
-  conceptos.push(["= Debe en total", x.debe, ROJO, true], ["− Descuento del salario", x.descuento, MORADO, true]);
+  conceptos.push(["= Debe en total", x.debe, ROJO, true]);
+  x.reparto.cuotas.forEach(([pl, v]) => conceptos.push(["  " + textoCuota(pl, v) + " · " + pl.nombre, v, MORADO]));
+  conceptos.push(["− Descuento del salario", x.descuento, MORADO, true]);
   const altoCon = 120 + conceptos.length * FILA, altoDet = x.movs.length ? 130 + x.movs.length * MOV : 0, altoTot = 330 + (x.queda > 0 ? 60 : 0);
   const H = CAB + 180 + altoCon + 40 + (altoDet ? altoDet + 40 : 0) + altoTot + 180;
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
@@ -1098,7 +1129,7 @@ function imagenPrePago(k, x) {
   texto("Tu cuenta", M + 40, y + 76, F(800, 42), OSC);
   let fy = y + 120;
   conceptos.forEach(([t, m, col, b], i) => {
-    texto(t, M + 40, fy + 54, F(b ? 700 : 400, 38), b ? OSC : GRIS);
+    texto(recortar(t, F(b ? 700 : 400, 38), W - 2 * M - 360), M + 40, fy + 54, F(b ? 700 : 400, 38), b ? OSC : GRIS);
     texto(fmtQ(m), W - M - 40, fy + 54, F(700, 40), col, "right");
     if (i < conceptos.length - 1) { c.fillStyle = "#E2E8F0"; c.fillRect(M + 40, fy + FILA - 1, W - 2 * M - 80, 2); }
     fy += FILA;
@@ -1589,6 +1620,7 @@ function vistaDeudas(k) {
           <div class="fila"><div><div class="nombre">${esc(p.nombre)}</div><div class="puesto">${p.tipo === "AYUDANTE" ? "Ayudante" : "Piloto"}${k.nombreCamion[p.camionId] ? " · " + esc(k.nombreCamion[p.camionId]) : ""}</div></div><div class="saldo">${fmtQ(s)}</div></div>
           <div class="progreso" title="Ha pagado ${avance.toFixed(0)}% de lo adelantado"><div style="width:${avance.toFixed(1)}%"></div></div>
           <div class="mini"><span>Adelantado ${fmtQ(tAde)}</span><span>Abonado ${fmtQ(tAbo)}</span></div>
+          ${planesDe(k.movs, p.id).filter((pl) => pl.activo).map((pl) => `<div class="plan-cuota"><div class="mini"><span><b>${esc(pl.nombre)}</b> · ${pl.cuotasTotal} cuotas de ${fmtQ(pl.cuota)}</span><span>${pl.pagadas}/${pl.cuotasTotal}</span></div><div class="progreso morado"><div style="width:${Math.min(100, pl.pagado / pl.total * 100).toFixed(1)}%"></div></div><div class="mini"><span>Pagado ${fmtQ(Math.min(pl.pagado, pl.total))}</span><span>Faltan ${fmtQ(pl.restante)}</span></div></div>`).join("")}
           <details><summary>Ver abonos (${abo.length})</summary><ul>${lista(abo, "−")}</ul></details>
           <details><summary>Ver adelantos (${ade.length})</summary><ul>${lista(ade, "+")}</ul></details>
         </div>`;
@@ -1821,6 +1853,9 @@ function cargarDemo() {
     { tipo: "GASTO", categoria: "OTRO", titulo: "Efectivo para el dueño", nota: "Lo pidió en efectivo", monto: 500, fecha: d(0, 12), dueno: "Juan" },
     { tipo: "GASTO", categoria: "OTRO", titulo: "Compra en el súper", nota: "", monto: 1470, fecha: d(0, 18), dueno: "Juan" },
     { tipo: "GASTO", categoria: "OTRO", titulo: "Efectivo para el dueño", nota: "", monto: 800, fecha: d(0, 7), dueno: "Pedro" },
+    { id: "plan1", pilotoId: "p2", tipo: "ADELANTO", categoria: "OTRO", monto: 2000, cuotas: 10, montoCuota: 200, fecha: d(1, 5), nota: "Celular Samsung", camionId: "c2" },
+    { pilotoId: "p2", tipo: "ABONO", planId: "plan1", monto: 200, fecha: d(1, 30), nota: "Descontado del salario · Cuota 1 de 10 · Celular Samsung" },
+    { pilotoId: "p2", tipo: "ABONO", planId: "plan1", monto: 400, fecha: d(0, 10), nota: "Cuotas 2 a 3 de 10 · Celular Samsung" },
     { pilotoId: "p1", tipo: "ADELANTO", categoria: "RECARGA", monto: 100, fecha: d(0, 20), nota: "Recarga · saldo Tigo", camionId: "c1" },
     { pilotoId: "p1", tipo: "ADELANTO", monto: 2500, fecha: d(1, 20), nota: "Transferencia" },
     { pilotoId: "p1", tipo: "ABONO", monto: 1000, fecha: d(0, 1), nota: "" },
@@ -1834,7 +1869,7 @@ function cargarDemo() {
     { pilotoId: "p3", tipo: "PAGO", monto: 3000, fecha: d(0, 15), nota: "Salario" }
   );
   datos.diesel = diesel;
-  datos.movimientos = movs.map((m) => ({ camionId: "", categoria: "", titulo: "", pilotoId: "", dueno: "", ...m }));
+  datos.movimientos = movs.map((m) => ({ camionId: "", categoria: "", titulo: "", pilotoId: "", dueno: "", cuotas: 0, montoCuota: 0, planId: "", ...m }));
   $("avisoDemo").hidden = false;
   $("botonSalir").hidden = true;
   $("usuarioLateral").textContent = "Datos de ejemplo";
@@ -1905,7 +1940,7 @@ async function iniciarFirebase() {
       escuchar("camiones", (id, x) => ({ id, nombre: x.nombre || "", placa: x.placa || "", dueno: x.dueno || "" }));
       escuchar("pilotos", (id, x) => ({ id, nombre: x.nombre || "", camionId: x.camionId || "", tipo: x.tipo || "PILOTO", salario: x.salario || 0 }));
       escuchar("diesel", (id, x) => ({ id, camionId: x.camionId || "", fecha: x.fecha || 0, galones: x.galones || 0, monto: x.monto || 0, pagado: !!x.pagado }));
-      escuchar("movimientos", (id, x) => ({ id, pilotoId: x.pilotoId || "", tipo: x.tipo || "", monto: x.monto || 0, fecha: x.fecha || 0, nota: x.nota || "", categoria: x.categoria || "OTRO", titulo: x.titulo || "", camionId: x.camionId || "", dueno: x.dueno || "" }));
+      escuchar("movimientos", (id, x) => ({ id, pilotoId: x.pilotoId || "", tipo: x.tipo || "", monto: x.monto || 0, fecha: x.fecha || 0, nota: x.nota || "", categoria: x.categoria || "OTRO", titulo: x.titulo || "", camionId: x.camionId || "", cuotas: x.cuotas || 0, montoCuota: x.montoCuota || 0, planId: x.planId || "", dueno: x.dueno || "" }));
       soyMaster = esMaster;
       $("usuarioLateral").textContent = user.email.replace(DOMINIO_USUARIOS, "") + (esMaster ? " · máster" : "");
       mostrar("vistaPanel");
