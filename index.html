@@ -467,18 +467,20 @@ const SIN_DUENO = "Sin dueño";
 // ---------- Colores de las gráficas (validados para daltonismo), en orden fijo, por tema ----------
 const PALETA = {
   claro:  { serie: ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"],
-            cat: { PEAJE: "#1baf7a", REPUESTOS: "#eb6834", VIATICOS: "#6250d6", OTRO: "#e87ba4" },
+            cat: { PEAJE: "#1baf7a", RECARGA: "#2a78d6", REPUESTOS: "#eb6834", VIATICOS: "#6250d6", OTRO: "#e87ba4" },
             diesel: "#eda100", gasto: "#2a78d6", adelanto: "#e34948", abono: "#1baf7a", salario: "#6250d6", debe: "#e34948" },
   oscuro: { serie: ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#0ca30c", "#9085e9", "#e66767"],
-            cat: { PEAJE: "#199e70", REPUESTOS: "#d95926", VIATICOS: "#9085e9", OTRO: "#d55181" },
+            cat: { PEAJE: "#199e70", RECARGA: "#3987e5", REPUESTOS: "#d95926", VIATICOS: "#9085e9", OTRO: "#d55181" },
             diesel: "#c98500", gasto: "#3987e5", adelanto: "#e66767", abono: "#199e70", salario: "#9085e9", debe: "#e66767" }
 };
 const pal = () => PALETA[document.documentElement.dataset.tema === "oscuro" ? "oscuro" : "claro"];
 const CATEGORIAS = [
-  { id: "PEAJE", nombre: "Peaje" }, { id: "REPUESTOS", nombre: "Repuestos" },
+  { id: "PEAJE", nombre: "Peaje" }, { id: "RECARGA", nombre: "Recarga" }, { id: "REPUESTOS", nombre: "Repuestos" },
   { id: "VIATICOS", nombre: "Viáticos" }, { id: "OTRO", nombre: "Otro" }
 ];
-const nombreCat = (id) => (CATEGORIAS.find((c) => c.id === id) || CATEGORIAS[3]).nombre;
+const nombreCat = (id) => (CATEGORIAS.find((c) => c.id === id) || CATEGORIAS.find((c) => c.id === "OTRO")).nombre;
+// Adelanto tipo recarga (se le descuenta a la persona)
+const etiquetaMov = (m) => m.tipo === "ADELANTO" ? (m.categoria === "RECARGA" ? "Recarga" : "Adelanto") : m.tipo === "ABONO" ? "Abono" : "Pago de salario";
 const colorCat = (id) => pal().cat[id] || pal().cat.OTRO;
 
 const IC = {
@@ -678,7 +680,7 @@ let ultimoDoc = null;
 const TABS_REP = [["diesel", "Diésel"], ["adelantos", "Adelantos"], ["boletas", "Boletas de pago"], ["porpagar", "Por pagar"], ["gastos", "Gastos"], ["duenos", "Dueños"], ["liquidacion", "Liquidación"]];
 // Colores para la hoja (siempre fondo blanco)
 const CH = { diesel: "#B45309", azul: "#1D4ED8", verde: "#047857", rojo: "#B91C1C", morado: "#6D28D9", naranja: "#C2410C", gris: "#64748B", turquesa: "#0F766E" };
-const CHIP_CAT = { PEAJE: "#CCFBF1", REPUESTOS: "#FFEDD5", VIATICOS: "#FCE7F3", OTRO: "#E2E8F0" };
+const CHIP_CAT = { PEAJE: "#CCFBF1", RECARGA: "#DBEAFE", REPUESTOS: "#FFEDD5", VIATICOS: "#FCE7F3", OTRO: "#E2E8F0" };
 const MODOS = { PAREJO: "parejo entre dueños", CAMION: "por camión", FACTURADO: "según lo facturado" };
 
 // Celdas: texto, o con número (para Excel), color y negrita
@@ -901,7 +903,7 @@ function repAdelantos(k) {
   tablaDoc(d, ["Fecha", "Persona", "Movimiento", "Nota", "Monto"], [0, 0, 0, 0, 1],
     movsR.map((m) => {
       const a = m.tipo === "ADELANTO";
-      return [fmtFecha(m.fecha), cT(k.nombrePersona[m.pilotoId] || "", { b: true }), cT(a ? "Adelanto" : "Abono", { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
+      return [fmtFecha(m.fecha), cT(k.nombrePersona[m.pilotoId] || "", { b: true }), cT(etiquetaMov(m), { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
     }), null);
   return d;
 }
@@ -945,7 +947,7 @@ function repBoletas(k) {
     if (b.periodo.length) {
       tablaDoc(d, ["Fecha", "Movimiento", "Nota", "Monto"], [0, 0, 0, 1], b.periodo.map((m) => {
         const a = m.tipo === "ADELANTO";
-        return [fmtFecha(m.fecha), cT(a ? "Adelanto" : "Abono", { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
+        return [fmtFecha(m.fecha), cT(etiquetaMov(m), { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
       }), null);
     }
     notaDoc(d, "Recibí conforme: ______________________________        Fecha: ____________");
@@ -957,7 +959,7 @@ function repGastos(k) {
   const cat = $("fCategoria").value;
   const lista = k.gastosRango.filter((g) => !cat || g.categoria === cat);
   const grupos = agruparGastos(k, lista), total = suma(lista, (g) => g.monto);
-  const colorC = { PEAJE: CH.turquesa, REPUESTOS: CH.naranja, VIATICOS: "#BE185D", OTRO: CH.gris };
+  const colorC = { PEAJE: CH.turquesa, RECARGA: CH.azul, REPUESTOS: CH.naranja, VIATICOS: "#BE185D", OTRO: CH.gris };
   const d = docNuevo("Reporte de gastos", [textoRango(k), textoFiltro(k) + " · " + (cat ? nombreCat(cat) : "Todos los tipos")], "Agrupado por camión, más lo entregado directo a cada dueño");
   cuadros(d, [cuadro("Total en gastos", total, CH.naranja), ...CATEGORIAS.map((c) => cuadro(c.nombre, suma(lista.filter((g) => g.categoria === c.id), (g) => g.monto), colorC[c.id]))]);
   tablasGastos(d, k, grupos);
@@ -1052,7 +1054,7 @@ function repPorPagar(k) {
     tablaDoc(d, ["Concepto", "Monto"], [0, 1], filas, ["LE TOCA RECIBIR", cQ(x.recibe, { color: CH.verde })]);
     if (x.movs.length) tablaDoc(d, ["Fecha", "Movimiento", "Nota", "Monto"], [0, 0, 0, 1], x.movs.map((m) => {
       const a = m.tipo === "ADELANTO";
-      return [fmtFecha(m.fecha), cT(a ? "Adelanto" : "Abono", { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
+      return [fmtFecha(m.fecha), cT(etiquetaMov(m), { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
     }), null);
   });
   return d;
@@ -1109,7 +1111,7 @@ function imagenPrePago(k, x) {
     x.movs.forEach((m) => {
       const a = m.tipo === "ADELANTO";
       caja(M + 40, my + 16, 24, 60, 8, a ? "#DBEAFE" : "#D1FAE5");
-      texto(fmtFecha(m.fecha) + " · " + (a ? "Adelanto" : "Abono"), M + 90, my + 42, F(700, 34), OSC);
+      texto(fmtFecha(m.fecha) + " · " + etiquetaMov(m), M + 90, my + 42, F(700, 34), OSC);
       if (m.nota) texto(recortar(m.nota, F(400, 30), W - 2 * M - 420), M + 90, my + 80, F(400, 30), GRIS);
       texto((a ? "+ " : "− ") + fmtQ(m.monto), W - M - 40, my + 58, F(700, 38), a ? AZUL : VERDE, "right");
       my += MOV;
@@ -1819,6 +1821,7 @@ function cargarDemo() {
     { tipo: "GASTO", categoria: "OTRO", titulo: "Efectivo para el dueño", nota: "Lo pidió en efectivo", monto: 500, fecha: d(0, 12), dueno: "Juan" },
     { tipo: "GASTO", categoria: "OTRO", titulo: "Compra en el súper", nota: "", monto: 1470, fecha: d(0, 18), dueno: "Juan" },
     { tipo: "GASTO", categoria: "OTRO", titulo: "Efectivo para el dueño", nota: "", monto: 800, fecha: d(0, 7), dueno: "Pedro" },
+    { pilotoId: "p1", tipo: "ADELANTO", categoria: "RECARGA", monto: 100, fecha: d(0, 20), nota: "Recarga · saldo Tigo", camionId: "c1" },
     { pilotoId: "p1", tipo: "ADELANTO", monto: 2500, fecha: d(1, 20), nota: "Transferencia" },
     { pilotoId: "p1", tipo: "ABONO", monto: 1000, fecha: d(0, 1), nota: "" },
     { pilotoId: "p1", tipo: "ADELANTO", monto: 1500, fecha: d(0, 8), nota: "Efectivo" },
