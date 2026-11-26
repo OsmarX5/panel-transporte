@@ -207,6 +207,7 @@
   .pestana:hover { border-color: var(--neon); }
   .pestana.activa { background: linear-gradient(90deg, #FBBF24, #F59E0B); color: #0F172A; border-color: transparent; box-shadow: 0 0 16px rgba(251,191,36,.4); }
   .acciones-rep { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .boton-imagen { border-color: #34D399 !important; color: var(--verde) !important; }
   .acciones-rep button { height: 46px; padding: 0 20px; border-radius: 12px; font: inherit; font-weight: 700; cursor: pointer; }
   .sub-liq { font-size: 14px; margin: 16px 0 8px; color: var(--texto); }
   .form-liq { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
@@ -674,7 +675,7 @@ function gruposHTML(k, grupos, etiqueta = "GRAN TOTAL") {
 let soyMaster = false;
 let tabReporte = "diesel";
 let ultimoDoc = null;
-const TABS_REP = [["diesel", "Diésel"], ["adelantos", "Adelantos"], ["boletas", "Boletas de pago"], ["gastos", "Gastos"], ["duenos", "Dueños"], ["liquidacion", "Liquidación"]];
+const TABS_REP = [["diesel", "Diésel"], ["adelantos", "Adelantos"], ["boletas", "Boletas de pago"], ["porpagar", "Por pagar"], ["gastos", "Gastos"], ["duenos", "Dueños"], ["liquidacion", "Liquidación"]];
 // Colores para la hoja (siempre fondo blanco)
 const CH = { diesel: "#B45309", azul: "#1D4ED8", verde: "#047857", rojo: "#B91C1C", morado: "#6D28D9", naranja: "#C2410C", gris: "#64748B", turquesa: "#0F766E" };
 const CHIP_CAT = { PEAJE: "#CCFBF1", REPUESTOS: "#FFEDD5", VIATICOS: "#FCE7F3", OTRO: "#E2E8F0" };
@@ -731,7 +732,7 @@ function docHTML(d) {
 function nombreDoc() {
   const k = contexto();
   const iso = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-  const tipo = { diesel: "Diesel", adelantos: "Adelantos", boletas: "Boletas", gastos: "Gastos", duenos: "Duenos", liquidacion: "Liquidacion" }[tabReporte];
+  const tipo = { diesel: "Diesel", adelantos: "Adelantos", boletas: "Boletas", porpagar: "Planilla_por_pagar", gastos: "Gastos", duenos: "Duenos", liquidacion: "Liquidacion" }[tabReporte];
   return `${tipo}_${k.r.ini ? iso(k.r.ini) : "inicio"}_a_${iso(k.r.fin)}` + (k.fDue ? "_" + k.fDue.replace(/\s+/g, "_") : "");
 }
 function imprimir() {
@@ -1007,6 +1008,140 @@ function repDuenos(k) {
   return d;
 }
 
+
+// ---------- Por pagar (pre-planilla): lo que lleva cada persona desde su último pago ----------
+function prePagosDe(k, personas) {
+  const corte = Date.now();
+  return personas.map((p) => {
+    const suyos = k.movs.filter((m) => m.pilotoId === p.id).sort((a, b) => a.fecha - b.fecha);
+    const pagos = suyos.filter((m) => m.tipo === "PAGO");
+    const ultimo = pagos.length ? pagos[pagos.length - 1] : null;
+    const desde = ultimo ? ultimo.fecha : -Infinity;
+    const antes = ultimo ? Math.max(0, suma(suyos.filter((m) => m.fecha <= desde), (m) => m.tipo === "ADELANTO" ? m.monto : m.tipo === "ABONO" ? -m.monto : 0)) : 0;
+    const movsP = suyos.filter((m) => (m.tipo === "ADELANTO" || m.tipo === "ABONO") && m.fecha > desde);
+    const adel = suma(movsP.filter((m) => m.tipo === "ADELANTO"), (m) => m.monto), abon = suma(movsP.filter((m) => m.tipo === "ABONO"), (m) => m.monto);
+    const salario = Number(p.salario) || 0;
+    const debe = Math.max(0, antes + adel - abon), descuento = Math.min(debe, Math.max(0, salario));
+    return { p, ultimo, antes, movs: movsP, adel, abon, salario, debe, descuento, recibe: salario - descuento, queda: debe - descuento, corte };
+  }).sort((a, b) => a.p.nombre.localeCompare(b.p.nombre));
+}
+
+function repPorPagar(k) {
+  const l = prePagosDe(k, personasFiltro(k)), una = l.length === 1;
+  const d = docNuevo(una ? "Resumen de pago · aún no pagado" : "Planilla por pagar",
+    [una ? l[0].p.nombre : l.length + " personas", "Corte al " + fmtFecha(Date.now()) + " · desde el último pago de cada persona"],
+    "AÚN NO SE HA PAGADO · Le toca = salario − descuento de lo que debe");
+  if (!l.length) { notaDoc(d, "No hay personal registrado."); return d; }
+  if (!una) {
+    cuadros(d, [cuadro("Salarios", suma(l, (x) => x.salario), CH.morado), cuadro("Descuentos", suma(l, (x) => x.descuento), CH.azul), cuadro("Total a pagar", suma(l, (x) => x.recibe), CH.verde)]);
+    seccionDoc(d, "Resumen");
+    tablaDoc(d, ["Persona", "Salario", "Debe", "Descuento", "Le toca"], [0, 1, 1, 1, 1],
+      l.map((x) => [cT(x.p.nombre, { b: true }), cQ(x.salario), cQ(x.debe, { color: CH.rojo }), cQ(x.descuento, { color: CH.morado }), cQ(x.recibe, { color: CH.verde, b: true })]),
+      ["TOTAL", cQ(suma(l, (x) => x.salario)), cQ(suma(l, (x) => x.debe)), cQ(suma(l, (x) => x.descuento)), cQ(suma(l, (x) => x.recibe))]);
+  }
+  l.forEach((x, i) => {
+    const cam = k.nombreCamion[x.p.camionId];
+    seccionDoc(d, x.p.nombre + " · " + puesto(x.p) + (cam ? " · " + cam : "") + " · AÚN NO SE HA PAGADO", !una);
+    const filas = [[cT("Salario", { b: true }), cQ(x.salario, { b: true })]];
+    if (x.antes > 0) filas.push(["Debía del pago anterior" + (x.ultimo ? " (" + fmtFecha(x.ultimo.fecha) + ")" : ""), cQ(x.antes, { color: CH.azul })]);
+    filas.push(["+ Adelantos desde el último pago", cQ(x.adel, { color: CH.azul })]);
+    if (x.abon > 0) filas.push(["− Abonos", cQ(x.abon, { color: CH.verde })]);
+    filas.push([cT("= Debe en total", { b: true }), cQ(x.debe, { color: CH.rojo, b: true })]);
+    filas.push(["− Descuento del salario", cQ(x.descuento, { color: CH.morado })]);
+    if (x.queda > 0) filas.push([cT("Seguiría debiendo", { color: CH.gris }), cQ(x.queda, { color: CH.rojo })]);
+    tablaDoc(d, ["Concepto", "Monto"], [0, 1], filas, ["LE TOCA RECIBIR", cQ(x.recibe, { color: CH.verde })]);
+    if (x.movs.length) tablaDoc(d, ["Fecha", "Movimiento", "Nota", "Monto"], [0, 0, 0, 1], x.movs.map((m) => {
+      const a = m.tipo === "ADELANTO";
+      return [fmtFecha(m.fecha), cT(a ? "Adelanto" : "Abono", { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
+    }), null);
+  });
+  return d;
+}
+
+/** Imagen vertical (1080 px de ancho) con el resumen de una persona, para mandarla por WhatsApp */
+function imagenPrePago(k, x) {
+  const W = 1080, M = 64, FILA = 84, MOV = 96, CAB = 470;
+  const OSC = "#0F172A", GRIS = "#64748B", AZUL = "#1D4ED8", VERDE = "#047857", ROJO = "#B91C1C", MORADO = "#6D28D9", AMBAR = "#FBBF24";
+  const conceptos = [["Salario", x.salario, OSC, true]];
+  if (x.antes > 0) conceptos.push(["Debía del pago anterior", x.antes, AZUL]);
+  conceptos.push(["+ Adelantos", x.adel, AZUL]);
+  if (x.abon > 0) conceptos.push(["− Abonos", x.abon, VERDE]);
+  conceptos.push(["= Debe en total", x.debe, ROJO, true], ["− Descuento del salario", x.descuento, MORADO, true]);
+  const altoCon = 120 + conceptos.length * FILA, altoDet = x.movs.length ? 130 + x.movs.length * MOV : 0, altoTot = 330 + (x.queda > 0 ? 60 : 0);
+  const H = CAB + 180 + altoCon + 40 + (altoDet ? altoDet + 40 : 0) + altoTot + 180;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const c = cv.getContext("2d");
+  const F = (peso, tam) => `${peso} ${tam}px Inter, "Segoe UI", Roboto, sans-serif`;
+  const texto = (t, x0, y0, font, color, align = "left") => { c.font = font; c.fillStyle = color; c.textAlign = align; c.fillText(t, x0, y0); };
+  const caja = (x0, y0, w, h, r, color) => { c.fillStyle = color; c.beginPath(); c.roundRect(x0, y0, w, h, r); c.fill(); };
+  const recortar = (t, font, max) => { c.font = font; if (c.measureText(t).width <= max) return t; while (t.length && c.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
+  c.fillStyle = "#F1F5F9"; c.fillRect(0, 0, W, H);
+  c.fillStyle = OSC; c.fillRect(0, 0, W, CAB);
+  c.fillStyle = AMBAR; c.fillRect(0, CAB - 10, W, 10);
+  caja(M, 70, 120, 120, 30, AMBAR);
+  caja(M + 22, 104, 54, 46, 6, OSC); caja(M + 76, 118, 24, 32, 6, OSC);
+  c.fillStyle = OSC; c.beginPath(); c.arc(M + 40, 156, 10, 0, 7); c.arc(M + 86, 156, 10, 0, 7); c.fill();
+  c.letterSpacing = "4px"; texto("TRANSPORTES MORALES", M + 150, 118, F(700, 34), AMBAR); c.letterSpacing = "0px";
+  texto("Resumen de pago", M + 150, 176, F(700, 50), "#FFFFFF");
+  texto(recortar(x.p.nombre, F(800, 66), W - 2 * M), M, 300, F(800, 66), "#FFFFFF");
+  const cam = k.nombreCamion[x.p.camionId];
+  texto([puesto(x.p), cam].filter(Boolean).join(" · "), M, 362, F(400, 38), "#94A3B8");
+  texto("Corte al " + fmtFecha(x.corte), M, 420, F(400, 34), "#94A3B8");
+  let y = CAB + 40;
+  caja(M, y, W - 2 * M, 100, 50, "#FEF3C7");
+  c.fillStyle = "#F59E0B"; c.beginPath(); c.arc(M + 60, y + 50, 22, 0, 7); c.fill();
+  texto("AÚN NO SE HA PAGADO", M + 106, y + 64, F(800, 40), "#92400E");
+  y += 140;
+  caja(M, y, W - 2 * M, altoCon, 36, "#FFFFFF");
+  texto("Tu cuenta", M + 40, y + 76, F(800, 42), OSC);
+  let fy = y + 120;
+  conceptos.forEach(([t, m, col, b], i) => {
+    texto(t, M + 40, fy + 54, F(b ? 700 : 400, 38), b ? OSC : GRIS);
+    texto(fmtQ(m), W - M - 40, fy + 54, F(700, 40), col, "right");
+    if (i < conceptos.length - 1) { c.fillStyle = "#E2E8F0"; c.fillRect(M + 40, fy + FILA - 1, W - 2 * M - 80, 2); }
+    fy += FILA;
+  });
+  y += altoCon + 40;
+  if (altoDet) {
+    caja(M, y, W - 2 * M, altoDet, 36, "#FFFFFF");
+    texto("Detalle por fecha", M + 40, y + 76, F(800, 42), OSC);
+    let my = y + 120;
+    x.movs.forEach((m) => {
+      const a = m.tipo === "ADELANTO";
+      caja(M + 40, my + 16, 24, 60, 8, a ? "#DBEAFE" : "#D1FAE5");
+      texto(fmtFecha(m.fecha) + " · " + (a ? "Adelanto" : "Abono"), M + 90, my + 42, F(700, 34), OSC);
+      if (m.nota) texto(recortar(m.nota, F(400, 30), W - 2 * M - 420), M + 90, my + 80, F(400, 30), GRIS);
+      texto((a ? "+ " : "− ") + fmtQ(m.monto), W - M - 40, my + 58, F(700, 38), a ? AZUL : VERDE, "right");
+      my += MOV;
+    });
+    y += altoDet + 40;
+  }
+  caja(M, y, W - 2 * M, altoTot, 40, VERDE);
+  c.letterSpacing = "4px"; texto("TE TOCA RECIBIR", W / 2, y + 90, F(800, 40), "#D1FAE5", "center"); c.letterSpacing = "0px";
+  texto(fmtQ(x.recibe), W / 2, y + 210, F(800, 110), "#FFFFFF", "center");
+  texto("Salario " + fmtQ(x.salario) + "  −  descuento " + fmtQ(x.descuento), W / 2, y + 280, F(400, 32), "#D1FAE5", "center");
+  if (x.queda > 0) texto("Seguirías debiendo " + fmtQ(x.queda), W / 2, y + 336, F(700, 32), "#FFFFFF", "center");
+  y += altoTot + 60;
+  texto("Resumen informativo: el pago todavía no se ha hecho.", W / 2, y + 20, F(400, 30), GRIS, "center");
+  texto("Transportes Morales · " + fmtFecha(x.corte), W / 2, y + 66, F(400, 28), "#94A3B8", "center");
+  return cv;
+}
+
+async function descargarImagenes(k) {
+  const l = prePagosDe(k, personasFiltro(k));
+  if (!l.length) { alert("No hay personal registrado."); return; }
+  try { await document.fonts.ready; } catch (e) {}
+  const hoy = new Date(), iso = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
+  for (const x of l) {
+    const blob = await new Promise((ok) => imagenPrePago(k, x).toBlob(ok, "image/png"));
+    const url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = `Resumen_${x.p.nombre.replace(/\s+/g, "_")}_${iso}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    await new Promise((r) => setTimeout(r, 350));
+  }
+}
+
 // ---------- Liquidación ----------
 const LIQ_DEF = { pctFijo: "3", pctVar: "", gps: "", contador: "", docs: "", otros: [], fact: {} };
 let liq = (() => { try { return { ...LIQ_DEF, ...JSON.parse(localStorage.getItem("liquidacion") || "{}") }; } catch (e) { return { ...LIQ_DEF }; } })();
@@ -1096,7 +1231,7 @@ function formLiq(k) {
 }
 
 function construirReporte(k) {
-  return { diesel: repDiesel, adelantos: repAdelantos, boletas: repBoletas, gastos: repGastos, duenos: repDuenos, liquidacion: repLiquidacion }[tabReporte](k);
+  return { diesel: repDiesel, adelantos: repAdelantos, boletas: repBoletas, porpagar: repPorPagar, gastos: repGastos, duenos: repDuenos, liquidacion: repLiquidacion }[tabReporte](k);
 }
 
 function vistaReportes(k) {
@@ -1105,6 +1240,7 @@ function vistaReportes(k) {
     diesel: "Usa los filtros de periodo, dueño y camión.",
     adelantos: "Usa el periodo y elige una persona o todas.",
     boletas: "Elige una persona para su boleta, o todas para imprimirlas juntas (una por hoja).",
+    porpagar: "Lo que lleva cada persona desde su último pago, aunque aún no se le haya pagado. La imagen es para mandársela por WhatsApp.",
     gastos: "Usa el periodo, el dueño, el camión y el tipo de gasto.",
     duenos: "Elige un dueño para ver el detalle completo de su diésel, gastos y adelantos.",
     liquidacion: "Escribe lo facturado y los descuentos; el diésel y los gastos se toman solos."
@@ -1115,6 +1251,7 @@ function vistaReportes(k) {
     <div class="acciones-rep">
       <button class="boton" id="repPdf" type="button">📄 Descargar PDF</button>
       <button class="boton-sec" id="repExcel" type="button">📊 Descargar Excel</button>
+      ${tabReporte === "porpagar" ? '<button class="boton-sec boton-imagen" id="repImagen" type="button">🖼️ Imagen para el celular</button>' : ""}
     </div>
     <p class="nota" style="margin-top:8px">En PDF se abre la ventana de impresión: elige <b>"Guardar como PDF"</b> o tu impresora.</p>
   </div>
@@ -1128,6 +1265,7 @@ function activarReportes() {
   if (!pdf) return;
   pdf.addEventListener("click", imprimir);
   $("repExcel").addEventListener("click", descargarExcel);
+  if ($("repImagen")) $("repImagen").addEventListener("click", () => descargarImagenes(contexto()));
   const rehacer = () => { $("contHoja").innerHTML = docHTML(construirReporte(contexto())); };
   document.querySelectorAll("[data-liq]").forEach((inp) => inp.addEventListener("input", () => {
     const c = inp.dataset.liq;
@@ -1157,7 +1295,7 @@ function dibujar() {
     (k.fDue && sec !== "personal" && sec !== "deudas" ? " · " + k.fDue : "") +
     (k.fCam && sec !== "personal" && sec !== "deudas" ? " · " + k.nombreCamion[k.fCam] : "");
   const rep = sec === "reportes";
-  const conPersona = rep && (tabReporte === "adelantos" || tabReporte === "boletas");
+  const conPersona = rep && (tabReporte === "adelantos" || tabReporte === "boletas" || tabReporte === "porpagar");
   const sinCamion = sec === "personal" || sec === "deudas" || conPersona;
   $("campoCamion").hidden = sinCamion;
   $("campoDueno").hidden = sinCamion;
