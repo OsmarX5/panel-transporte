@@ -121,6 +121,8 @@
   .encabezado .sub { color: var(--gris); font-size: 13px; font-weight: 400; display: block; margin-top: 2px; }
   .aviso-demo { background: var(--fondo-pend); color: var(--texto); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
   .filtros { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+  .filtros input { height: 42px; min-width: 150px; border-radius: 12px; border: 1px solid var(--borde); color: var(--texto); padding: 0 12px; font: inherit; color-scheme: light; }
+  [data-tema="oscuro"] .filtros input { color-scheme: dark; }
   .filtros select { height: 42px; min-width: 170px; border-radius: 12px; border: 1px solid var(--borde); background: var(--superficie); color: var(--texto); padding: 0 12px; }
 
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; }
@@ -197,6 +199,59 @@
   .gran-total { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 14px 18px; border-radius: 14px; background: linear-gradient(90deg, #FBBF24, #F59E0B); color: #0F172A; font-weight: 800; box-shadow: 0 0 22px rgba(251,191,36,.35); }
   .gran-total b { font-size: 20px; }
   .gran-total.morado { background: linear-gradient(90deg, #A78BFA, #8B5CF6); color: #1E1B4B; box-shadow: 0 0 22px rgba(139,92,246,.35); }
+
+
+  /* ---- Reportes (hoja blanca, como el PDF) ---- */
+  .pestanas { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pestana { height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--borde); background: var(--superficie-2); color: var(--texto); font: inherit; font-weight: 600; cursor: pointer; }
+  .pestana:hover { border-color: var(--neon); }
+  .pestana.activa { background: linear-gradient(90deg, #FBBF24, #F59E0B); color: #0F172A; border-color: transparent; box-shadow: 0 0 16px rgba(251,191,36,.4); }
+  .acciones-rep { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .acciones-rep button { height: 46px; padding: 0 20px; border-radius: 12px; font: inherit; font-weight: 700; cursor: pointer; }
+  .sub-liq { font-size: 14px; margin: 16px 0 8px; color: var(--texto); }
+  .form-liq { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .form-liq label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--gris); font-weight: 600; }
+  .form-liq input, .form-liq select { height: 42px; border-radius: 12px; border: 1px solid var(--borde); background: var(--superficie-2); color: var(--texto); padding: 0 12px; font: inherit; font-weight: 400; width: 100%; box-sizing: border-box; }
+  .form-liq select option { background: var(--solido); }
+  .form-liq .boton-sec { height: 42px; width: 100%; }
+  .fila-otro { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--borde); font-size: 14px; }
+  .hoja { background: #FFFFFF; color: #0F172A; border-radius: 16px; padding: 28px; box-shadow: var(--sombra); font-family: Inter, sans-serif; font-size: 13px; }
+  .hoja-cab { display: flex; gap: 14px; align-items: center; border-bottom: 3px solid #FBBF24; padding-bottom: 14px; margin-bottom: 12px; }
+  .hoja-logo { width: 50px; height: 50px; border-radius: 12px; background: #FBBF24; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .hoja-emp { font-size: 11px; letter-spacing: 3px; color: #0E7490; font-weight: 700; }
+  .hoja h2 { margin: 2px 0 4px; font-size: 22px; color: #0F172A; font-family: "Space Grotesk", Inter, sans-serif; }
+  .hoja-dato { color: #475569; font-size: 12px; }
+  .hoja-ley { font-size: 11px; color: #64748B; margin-bottom: 8px; }
+  .hoja-cuadros { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 12px 0; }
+  .hoja-cuadro { border: 1px solid #E2E8F0; border-top: 4px solid var(--c); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .hoja-cuadro span { font-size: 11px; color: #64748B; }
+  .hoja-cuadro b { font-size: 17px; color: #0F172A; }
+  .hoja h3 { font-size: 14px; margin: 20px 0 8px; color: #0F172A; padding-left: 8px; border-left: 4px solid #FBBF24; }
+  .hoja-nota { font-size: 12px; color: #334155; margin: 8px 0; }
+  .hoja-tabla-caja { overflow-x: auto; }
+  .hoja-tabla { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 6px; }
+  .hoja-tabla th { background: #1E293B; color: #FFFFFF; text-align: left; padding: 7px 8px; font-weight: 600; white-space: nowrap; }
+  .hoja-tabla td { padding: 6px 8px; border-bottom: 1px solid #E2E8F0; color: #0F172A; }
+  .hoja-tabla tbody tr:nth-child(even) td { background: #F8FAFC; }
+  .hoja-tabla tfoot td { font-weight: 800; background: #FEF3C7; border-top: 2px solid #F59E0B; }
+  .hoja .num { text-align: right; white-space: nowrap; }
+  .hoja-chip { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #0F172A; white-space: nowrap; }
+  .hoja-vacio { color: #94A3B8; text-align: center; }
+  .hoja-pie { margin-top: 18px; font-size: 11px; color: #94A3B8; text-align: right; }
+  @media (max-width: 600px) { .hoja { padding: 16px; border-radius: 12px; } .hoja h2 { font-size: 18px; } }
+  #impresion { display: none; }
+  @media print {
+    body.imprimiendo > *:not(#impresion) { display: none !important; }
+    body.imprimiendo { background: #FFFFFF !important; }
+    body.imprimiendo #impresion { display: block; }
+    #impresion .hoja { box-shadow: none; border-radius: 0; padding: 0; animation: none; }
+    #impresion * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #impresion .hoja h3.salto { break-before: page; }
+    #impresion .hoja h3 { break-after: avoid; }
+    #impresion .hoja tr, #impresion .hoja-cuadro { break-inside: avoid; }
+    #impresion .hoja-tabla-caja { overflow: visible; }
+    @page { size: letter; margin: 12mm; }
+  }
 
   /* ================= Estilo futurista (vidrio + neón) ================= */
   body { background: var(--cielo-3); font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -351,7 +406,25 @@
             <option value="3meses">Últimos 3 meses</option>
             <option value="anio">Este año</option>
             <option value="todo">Todo el historial</option>
+            <option value="elegirMes">Elegir un mes…</option>
+            <option value="rango">Elegir fechas…</option>
           </select>
+        </div>
+        <div class="campo" id="campoMes" hidden>
+          <label for="fMes">Mes</label>
+          <input type="month" id="fMes">
+        </div>
+        <div class="campo" id="campoDesde" hidden>
+          <label for="fDesde">Desde</label>
+          <input type="date" id="fDesde">
+        </div>
+        <div class="campo" id="campoHasta" hidden>
+          <label for="fHasta">Hasta</label>
+          <input type="date" id="fHasta">
+        </div>
+        <div class="campo" id="campoPersona" hidden>
+          <label for="fPersona">Persona</label>
+          <select id="fPersona"></select>
         </div>
         <div class="campo" id="campoDueno">
           <label for="fDueno">Dueño</label>
@@ -408,6 +481,7 @@ const nombreCat = (id) => (CATEGORIAS.find((c) => c.id === id) || CATEGORIAS[3])
 const colorCat = (id) => pal().cat[id] || pal().cat.OTRO;
 
 const IC = {
+  reportes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
   inicio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v10H3z"/></svg>',
   diesel: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.77,7.23l0.01,-0.01 -3.72,-3.72L15,4.56l2.11,2.11c-0.94,0.36 -1.61,1.26 -1.61,2.33 0,1.38 1.12,2.5 2.5,2.5 0.36,0 0.69,-0.08 1,-0.21v7.21c0,0.55 -0.45,1 -1,1s-1,-0.45 -1,-1V14c0,-1.1 -0.9,-2 -2,-2h-1V5c0,-1.1 -0.9,-2 -2,-2H6c-1.1,0 -2,0.9 -2,2v16h10v-7.5h1.5v5c0,1.38 1.12,2.5 2.5,2.5s2.5,-1.12 2.5,-2.5V9c0,-0.69 -0.28,-1.32 -0.73,-1.77zM12,10H6V5h6v5zM18,10c-0.55,0 -1,-0.45 -1,-1s0.45,-1 1,-1 1,0.45 1,1 -0.45,1 -1,1z"/></svg>',
   gastos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16l-3-2-3 2-2-2-2 2-3-2-3 2z"/><path d="M8 9h8M8 13h5"/></svg>',
@@ -421,7 +495,8 @@ const SECCIONES = [
   { id: "gastos", nombre: "Gastos" },
   { id: "duenos", nombre: "Dueños" },
   { id: "personal", nombre: "Personal" },
-  { id: "deudas", nombre: "Deudas" }
+  { id: "deudas", nombre: "Deudas" },
+  { id: "reportes", nombre: "Reportes" }
 ];
 
 const $ = (id) => document.getElementById(id);
@@ -470,13 +545,14 @@ $("botonTema").addEventListener("click", () => {
 pintarBotonTema();
 
 // ---------------- Menú y navegación ----------------
+function seccionesVisibles() { return SECCIONES.filter((s) => s.id !== "reportes" || soyMaster); }
 function seccionActual() {
   const h = location.hash.replace("#", "");
-  return SECCIONES.some((s) => s.id === h) ? h : "inicio";
+  return seccionesVisibles().some((s) => s.id === h) ? h : "inicio";
 }
 function pintarMenu() {
   const act = seccionActual();
-  $("menuLateral").innerHTML = SECCIONES.map((s) => `<a href="#${s.id}" class="${s.id === act ? "activo" : ""}" ${s.id === act ? 'aria-current="page"' : ""}>${IC[s.id]}<span>${s.nombre}</span></a>`).join("");
+  $("menuLateral").innerHTML = seccionesVisibles().map((s) => `<a href="#${s.id}" class="${s.id === act ? "activo" : ""}" ${s.id === act ? 'aria-current="page"' : ""}>${IC[s.id]}<span>${s.nombre}</span></a>`).join("");
 }
 function cerrarMenu() { $("lateral").classList.remove("abierto"); $("velo").classList.remove("abierto"); }
 $("botonMenu").addEventListener("click", () => { $("lateral").classList.add("abierto"); $("velo").classList.add("abierto"); });
@@ -495,6 +571,18 @@ function rangoPeriodo() {
     case "3meses": return { ini: new Date(y, m - 2, 1).getTime(), fin, txt: "últimos 3 meses" };
     case "anio": return { ini: new Date(y, 0, 1).getTime(), fin, txt: "año " + y };
     case "todo": return { ini: 0, fin, txt: "todo el historial" };
+    case "elegirMes": {
+      const v = $("fMes").value || `${y}-${String(m + 1).padStart(2, "0")}`;
+      const [yy, mm] = v.split("-").map(Number);
+      return { ini: new Date(yy, mm - 1, 1).getTime(), fin: new Date(yy, mm, 1).getTime() - 1, txt: MESES[mm - 1] + " " + yy };
+    }
+    case "rango": {
+      const dia = (v) => { const [a, b, c] = v.split("-").map(Number); return new Date(a, b - 1, c).getTime(); };
+      let i = $("fDesde").value ? dia($("fDesde").value) : new Date(y, m, 1).getTime();
+      let f = $("fHasta").value ? dia($("fHasta").value) + 86399999 : fin;
+      if (i > f) [i, f] = [f - 86399999, i + 86399999];
+      return { ini: i, fin: f, txt: fmtFecha(i) + " al " + fmtFecha(f) };
+    }
     default: return { ini: new Date(y, m, 1).getTime(), fin, txt: MESES[m] + " " + y };
   }
 }
@@ -530,6 +618,7 @@ function contexto() {
   const filtrandoCamion = !!(fCam || fDue);
 
   const r = rangoPeriodo();
+  rangoActual = r;
   const enRango = (ms) => ms >= r.ini && ms <= r.fin;
   const cargas = diesel.filter((d) => !filtrandoCamion || idsVisibles.has(d.camionId));
   const cargasRango = cargas.filter((d) => enRango(d.fecha));
@@ -579,6 +668,484 @@ function gruposHTML(k, grupos, etiqueta = "GRAN TOTAL") {
   </div>`).join("") + `<div class="gran-total"><span>${etiqueta}</span><b>${fmtQ(suma(grupos, (g) => g.total))}</b></div>`;
 }
 
+// =====================================================================
+//  REPORTES (solo el máster): vista previa en hoja, PDF (imprimir) y Excel
+// =====================================================================
+let soyMaster = false;
+let tabReporte = "diesel";
+let ultimoDoc = null;
+const TABS_REP = [["diesel", "Diésel"], ["adelantos", "Adelantos"], ["boletas", "Boletas de pago"], ["gastos", "Gastos"], ["duenos", "Dueños"], ["liquidacion", "Liquidación"]];
+// Colores para la hoja (siempre fondo blanco)
+const CH = { diesel: "#B45309", azul: "#1D4ED8", verde: "#047857", rojo: "#B91C1C", morado: "#6D28D9", naranja: "#C2410C", gris: "#64748B", turquesa: "#0F766E" };
+const CHIP_CAT = { PEAJE: "#CCFBF1", REPUESTOS: "#FFEDD5", VIATICOS: "#FCE7F3", OTRO: "#E2E8F0" };
+const MODOS = { PAREJO: "parejo entre dueños", CAMION: "por camión", FACTURADO: "según lo facturado" };
+
+// Celdas: texto, o con número (para Excel), color y negrita
+const cQ = (n, o = {}) => ({ t: fmtQ(n), n, z: "q", ...o });
+const cG = (n, o = {}) => ({ t: fmtGal(n), n, z: "g", ...o });
+const cT = (t, o = {}) => ({ t: String(t ?? ""), ...o });
+const celda = (c) => (c !== null && typeof c === "object") ? c : { t: String(c ?? "") };
+
+function docNuevo(titulo, datosDoc, leyendaDoc) { return { titulo, datos: datosDoc, leyenda: leyendaDoc, bloques: [] }; }
+const cuadros = (d, items) => d.bloques.push({ tipo: "cuadros", items });
+const seccionDoc = (d, t, salto) => d.bloques.push({ tipo: "seccion", t, salto });
+const notaDoc = (d, t) => d.bloques.push({ tipo: "nota", t });
+const tablaDoc = (d, enc, num, filas, total) => d.bloques.push({ tipo: "tabla", enc, num, filas, total });
+const cuadro = (etq, n, color, galones) => ({ etq, val: galones ? fmtGal(n) + " gal" : fmtQ(n), n, color, z: galones ? "g" : "q" });
+
+const textoRango = (k) => k.r.ini ? "Del " + fmtFecha(k.r.ini) + " al " + fmtFecha(k.r.fin) : "Todo el historial hasta el " + fmtFecha(k.r.fin);
+const textoFiltro = (k) => (k.fDue ? "Dueño: " + k.fDue : "Todos los dueños") + (k.fCam ? " · Camión: " + (k.nombreCamion[k.fCam] || "") : "");
+const puesto = (p) => p && p.tipo === "AYUDANTE" ? "Ayudante" : "Piloto";
+
+function td(c, num) {
+  c = celda(c);
+  const estilo = (c.color ? `color:${c.color};` : "") + (c.b ? "font-weight:700;" : "");
+  const dentro = c.chip ? `<span class="hoja-chip" style="background:${c.chip}">${esc(c.t)}</span>` : esc(c.t);
+  return `<td class="${num ? "num" : ""}" ${estilo ? `style="${estilo}"` : ""}>${dentro}</td>`;
+}
+
+function docHTML(d) {
+  ultimoDoc = d;
+  let h = `<div class="hoja" id="hoja">
+    <div class="hoja-cab">
+      <div class="hoja-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="#0F172A" aria-hidden="true"><path d="M20,8h-3V4H3c-1.1,0 -2,0.9 -2,2v11h2c0,1.66 1.34,3 3,3s3,-1.34 3,-3h6c0,1.66 1.34,3 3,3s3,-1.34 3,-3h2v-5l-3,-4zM6,18.5c-0.83,0 -1.5,-0.67 -1.5,-1.5s0.67,-1.5 1.5,-1.5 1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5zM19.5,9.5l1.96,2.5H17V9.5h2.5zM18,18.5c-0.83,0 -1.5,-0.67 -1.5,-1.5s0.67,-1.5 1.5,-1.5 1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></svg></div>
+      <div><div class="hoja-emp">TRANSPORTES MORALES</div><h2>${esc(d.titulo)}</h2>${d.datos.map((x) => `<div class="hoja-dato">${esc(x)}</div>`).join("")}</div>
+    </div>
+    ${d.leyenda ? `<div class="hoja-ley">${esc(d.leyenda)}</div>` : ""}`;
+  d.bloques.forEach((b) => {
+    if (b.tipo === "cuadros") h += `<div class="hoja-cuadros">${b.items.map((i) => `<div class="hoja-cuadro" style="--c:${i.color}"><span>${esc(i.etq)}</span><b>${esc(i.val)}</b></div>`).join("")}</div>`;
+    else if (b.tipo === "seccion") h += `<h3 class="${b.salto ? "salto" : ""}">${esc(b.t)}</h3>`;
+    else if (b.tipo === "nota") h += `<p class="hoja-nota">${esc(b.t)}</p>`;
+    else h += `<div class="hoja-tabla-caja"><table class="hoja-tabla">
+      <thead><tr>${b.enc.map((e, i) => `<th class="${b.num[i] ? "num" : ""}">${esc(e)}</th>`).join("")}</tr></thead>
+      <tbody>${b.filas.length ? b.filas.map((f) => `<tr>${f.map((c, i) => td(c, b.num[i])).join("")}</tr>`).join("") : `<tr><td colspan="${b.enc.length}" class="hoja-vacio">Sin registros</td></tr>`}</tbody>
+      ${b.total ? `<tfoot><tr>${b.total.map((c, i) => td(c, b.num[i])).join("")}</tr></tfoot>` : ""}
+    </table></div>`;
+  });
+  const ahora = new Date();
+  h += `<div class="hoja-pie">Generado el ${fmtFecha(ahora.getTime())} a las ${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}</div></div>`;
+  return h;
+}
+
+// ---------- Descargas ----------
+function nombreDoc() {
+  const k = contexto();
+  const iso = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  const tipo = { diesel: "Diesel", adelantos: "Adelantos", boletas: "Boletas", gastos: "Gastos", duenos: "Duenos", liquidacion: "Liquidacion" }[tabReporte];
+  return `${tipo}_${k.r.ini ? iso(k.r.ini) : "inicio"}_a_${iso(k.r.fin)}` + (k.fDue ? "_" + k.fDue.replace(/\s+/g, "_") : "");
+}
+function imprimir() {
+  const c = $("impresion");
+  c.innerHTML = $("hoja").outerHTML;
+  const tituloAntes = document.title;
+  document.title = nombreDoc();
+  document.body.classList.add("imprimiendo");
+  const limpiar = () => { document.body.classList.remove("imprimiendo"); c.innerHTML = ""; document.title = tituloAntes; window.removeEventListener("afterprint", limpiar); };
+  window.addEventListener("afterprint", limpiar);
+  window.print();
+  setTimeout(() => { if (!matchMedia("print").matches) limpiar(); }, 1500);
+}
+// ----- Excel hecho a mano (sin librerías): un .xlsx es un ZIP con archivos XML -----
+const TABLA_CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(bytes) { let c = 0xFFFFFFFF; for (let i = 0; i < bytes.length; i++) c = TABLA_CRC[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipSinComprimir(archivos) {
+  const enc = new TextEncoder(), partes = [], centrales = [];
+  let offset = 0;
+  const u16 = (v) => [v & 0xFF, (v >>> 8) & 0xFF], u32 = (v) => [v & 0xFF, (v >>> 8) & 0xFF, (v >>> 16) & 0xFF, (v >>> 24) & 0xFF];
+  archivos.forEach(({ nombre, texto }) => {
+    const nom = enc.encode(nombre), dat = enc.encode(texto), crc = crc32(dat);
+    const local = new Uint8Array([...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(dat.length), ...u32(dat.length), ...u16(nom.length), ...u16(0)]);
+    partes.push(local, nom, dat);
+    centrales.push(new Uint8Array([...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(dat.length), ...u32(dat.length), ...u16(nom.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(offset)]), nom);
+    offset += local.length + nom.length + dat.length;
+  });
+  const tamCentral = centrales.reduce((a, x) => a + x.length, 0);
+  const fin = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(archivos.length), ...u16(archivos.length), ...u32(tamCentral), ...u32(offset), ...u16(0)]);
+  return new Blob([...partes, ...centrales, fin], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+}
+const xmlEsc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// Estilos: 0 normal · 1 negrita · 2 título · 3 encabezado de tabla · 4 quetzales · 5 total (texto) · 6 total quetzales · 7 galones · 8 total galones · 9 sección
+const ESTILOS_XLSX = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="2"><numFmt numFmtId="164" formatCode="&quot;Q&quot; #,##0.00"/><numFmt numFmtId="165" formatCode="#,##0.0"/></numFmts>
+<fonts count="5"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="16"/><color rgb="FF0F172A"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="12"/><color rgb="FFB45309"/><name val="Calibri"/></font></fonts>
+<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E293B"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFEF3C7"/></patternFill></fill></fills>
+<borders count="1"><border/></borders>
+<cellStyleXfs count="1"><xf/></cellStyleXfs>
+<cellXfs count="10">
+<xf/><xf fontId="1" applyFont="1"/><xf fontId="2" applyFont="1"/><xf fontId="3" fillId="2" applyFont="1" applyFill="1"/>
+<xf numFmtId="164" applyNumberFormat="1"/><xf fontId="1" fillId="3" applyFont="1" applyFill="1"/><xf numFmtId="164" fontId="1" fillId="3" applyNumberFormat="1" applyFont="1" applyFill="1"/>
+<xf numFmtId="165" applyNumberFormat="1"/><xf numFmtId="165" fontId="1" fillId="3" applyNumberFormat="1" applyFont="1" applyFill="1"/><xf fontId="4" applyFont="1"/>
+</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+function libroXlsx(filas, anchos) {
+  const col = (i) => { let s = ""; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+  const xmlFilas = filas.map((f, r) => `<row r="${r + 1}">${f.map((c, i) => {
+    if (!c) return "";
+    const ref = col(i) + (r + 1), st = c.s ? ` s="${c.s}"` : "";
+    return c.t === "n" ? `<c r="${ref}"${st}><v>${c.v}</v></c>` : `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(c.v)}</t></is></c>`;
+  }).join("")}</row>`).join("");
+  const hoja = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${anchos.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${xmlFilas}</sheetData></worksheet>`;
+  return zipSinComprimir([
+    { nombre: "[Content_Types].xml", texto: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
+    { nombre: "_rels/.rels", texto: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { nombre: "xl/workbook.xml", texto: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Reporte" sheetId="1" r:id="rId1"/></sheets></workbook>' },
+    { nombre: "xl/_rels/workbook.xml.rels", texto: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
+    { nombre: "xl/styles.xml", texto: ESTILOS_XLSX },
+    { nombre: "xl/worksheets/sheet1.xml", texto: hoja }
+  ]);
+}
+function xl(c, total) {
+  c = celda(c);
+  if (typeof c.n === "number" && isFinite(c.n)) return { v: c.n, t: "n", s: c.z === "g" ? (total ? 8 : 7) : (total ? 6 : 4) };
+  if (!c.t) return total ? { v: "", t: "s", s: 5 } : null;
+  return { v: c.t, t: "s", s: total ? 5 : (c.b ? 1 : 0) };
+}
+function descargarExcel() {
+  const d = ultimoDoc;
+  if (!d) return;
+  const T = (v, s = 0) => ({ v, t: "s", s });
+  const filas = [[T("TRANSPORTES MORALES", 1)], [T(d.titulo, 2)], ...d.datos.map((x) => [T(x)])];
+  if (d.leyenda) filas.push([T(d.leyenda)]);
+  filas.push([]);
+  d.bloques.forEach((b) => {
+    if (b.tipo === "cuadros") { b.items.forEach((i) => filas.push([T(i.etq, 1), { v: i.n, t: "n", s: i.z === "g" ? 7 : 4 }])); filas.push([]); }
+    else if (b.tipo === "seccion") { filas.push([]); filas.push([T(b.t.toUpperCase(), 9)]); }
+    else if (b.tipo === "nota") filas.push([T(b.t)]);
+    else {
+      filas.push(b.enc.map((e) => T(e, 3)));
+      b.filas.forEach((f) => filas.push(f.map((c) => xl(c, false))));
+      if (b.total) filas.push(b.total.map((c) => xl(c, true)));
+      filas.push([]);
+    }
+  });
+  const anchos = [];
+  filas.forEach((f) => f.forEach((c, i) => {
+    if (!c) return;
+    const largo = c.t === "n" ? 14 : String(c.v).length + 2;
+    const tope = f.length === 1 ? 14 : 45;   // las filas de una sola celda (títulos, notas) no ensanchan la columna
+    anchos[i] = Math.max(anchos[i] || 12, Math.min(largo, tope));
+  }));
+  const url = URL.createObjectURL(libroXlsx(filas, anchos));
+  const a = document.createElement("a");
+  a.href = url; a.download = nombreDoc() + ".xlsx";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+// ---------- Tablas que se repiten ----------
+function tablasGastos(d, k, grupos) {
+  grupos.forEach((gr) => {
+    seccionDoc(d, gr.titulo + (gr.det ? " · " + gr.det : ""));
+    tablaDoc(d, ["Fecha", "Tipo", "Título", "Se le dio a", "Monto"], [0, 0, 0, 0, 1],
+      gr.lista.map((g) => [fmtFecha(g.fecha), cT(nombreCat(g.categoria), { chip: CHIP_CAT[g.categoria] || CHIP_CAT.OTRO }),
+        cT(g.titulo + (g.nota ? " (" + g.nota + ")" : "")), cT(k.nombrePersona[g.pilotoId] || "—", { color: CH.gris }), cQ(g.monto)]),
+      ["Subtotal", "", cT(gr.lista.length + (gr.lista.length === 1 ? " gasto" : " gastos"), { color: CH.gris }), "", cQ(gr.total)]);
+  });
+}
+function tablaDiesel(d, k, cargas) {
+  const l = [...cargas].sort((a, b) => a.fecha - b.fecha || (k.nombreCamion[a.camionId] || "").localeCompare(k.nombreCamion[b.camionId] || ""));
+  tablaDoc(d, ["Fecha", "Camión", "Galones", "Q / galón", "Estado", "Total"], [0, 0, 1, 1, 0, 1],
+    l.map((x) => [fmtFecha(x.fecha), k.nombreCamion[x.camionId] || "Camión eliminado", cG(x.galones), x.galones > 0 ? cQ(x.monto / x.galones) : "—",
+      cT(x.pagado ? "Pagado" : "Pendiente", { color: x.pagado ? CH.verde : CH.diesel, b: true }), cQ(x.monto, { b: true })]),
+    ["GRAN TOTAL", cT(l.length + " cargas", { color: CH.gris }), cG(suma(l, (x) => x.galones)), "", "", cQ(suma(l, (x) => x.monto))]);
+}
+function tablaAdelantos(d, k, lista) {
+  const l = [...lista].sort((a, b) => a.fecha - b.fecha);
+  tablaDoc(d, ["Fecha", "Persona", "Camión", "Nota", "Monto"], [0, 0, 0, 0, 1],
+    l.map((m) => [fmtFecha(m.fecha), cT(k.nombrePersona[m.pilotoId] || "Persona eliminada", { b: true }), k.nombreCamion[k.camionDeMov(m)] || "—", cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: CH.azul })]),
+    ["TOTAL", cT(l.length + " adelantos", { color: CH.gris }), "", "", cQ(suma(l, (m) => m.monto))]);
+}
+
+// ---------- Cada reporte ----------
+function repDiesel(k) {
+  const l = k.cargasRango;
+  const total = suma(l, (x) => x.monto), gal = suma(l, (x) => x.galones), pend = suma(l.filter((x) => !x.pagado), (x) => x.monto);
+  const d = docNuevo("Reporte de diésel", [textoRango(k), textoFiltro(k)], "Verde = pagado · Ámbar = pendiente de pagar");
+  cuadros(d, [cuadro("Total en diésel", total, CH.diesel), cuadro("Galones", gal, CH.azul, true), cuadro("Pagado", total - pend, CH.verde), cuadro("Pendiente", pend, CH.rojo)]);
+  seccionDoc(d, "Resumen por camión");
+  const filas = k.camionesVisibles.map((c) => {
+    const s = l.filter((x) => x.camionId === c.id);
+    return { c, n: s.length, gal: suma(s, (x) => x.galones), t: suma(s, (x) => x.monto), p: suma(s.filter((x) => !x.pagado), (x) => x.monto) };
+  }).filter((f) => f.n > 0).sort((a, b) => b.t - a.t);
+  tablaDoc(d, ["Camión", "Dueño", "Cargas", "Galones", "Pendiente", "Total"], [0, 0, 1, 1, 1, 1],
+    filas.map((f) => [cT(f.c.nombre, { b: true }), cT(k.duenoDe[f.c.id], { color: CH.gris }), String(f.n), cG(f.gal), cQ(f.p, { color: f.p > 0 ? CH.rojo : CH.gris }), cQ(f.t, { b: true })]),
+    ["TOTAL", "", String(suma(filas, (f) => f.n)), cG(gal), cQ(pend), cQ(total)]);
+  seccionDoc(d, "Detalle por fecha y camión");
+  tablaDiesel(d, k, l);
+  return d;
+}
+
+function personasFiltro(k) {
+  const fp = $("fPersona").value;
+  return k.pilotos.filter((p) => !fp || p.id === fp);
+}
+
+function repAdelantos(k) {
+  const ps = personasFiltro(k), ids = new Set(ps.map((p) => p.id));
+  const movsR = k.movs.filter((m) => ids.has(m.pilotoId) && k.enRango(m.fecha) && (m.tipo === "ADELANTO" || m.tipo === "ABONO")).sort((a, b) => a.fecha - b.fecha);
+  const adel = suma(movsR.filter((m) => m.tipo === "ADELANTO"), (m) => m.monto), abon = suma(movsR.filter((m) => m.tipo === "ABONO"), (m) => m.monto);
+  const deben = suma(ps, (p) => Math.max(0, k.saldo(p.id)));
+  const fp = $("fPersona").value;
+  const d = docNuevo("Reporte de adelantos", [textoRango(k), fp ? (k.nombrePersona[fp] || "") : "Todo el personal"], "Azul = adelanto · Verde = abono · Rojo = lo que debe hoy");
+  cuadros(d, [cuadro("Adelantado", adel, CH.azul), cuadro("Abonado", abon, CH.verde), cuadro("Deben hoy", deben, CH.rojo)]);
+  seccionDoc(d, "Resumen por persona");
+  const filas = ps.map((p) => {
+    const s = movsR.filter((m) => m.pilotoId === p.id);
+    return { p, a: suma(s.filter((m) => m.tipo === "ADELANTO"), (m) => m.monto), b: suma(s.filter((m) => m.tipo === "ABONO"), (m) => m.monto), debe: Math.max(0, k.saldo(p.id)) };
+  }).filter((f) => f.a > 0 || f.b > 0 || f.debe > 0).sort((a, b) => b.debe - a.debe);
+  tablaDoc(d, ["Persona", "Puesto", "Camión", "Adelantado", "Abonado", "Debe hoy"], [0, 0, 0, 1, 1, 1],
+    filas.map((f) => [cT(f.p.nombre, { b: true }), puesto(f.p), k.nombreCamion[f.p.camionId] || "—", cQ(f.a, { color: CH.azul }), cQ(f.b, { color: CH.verde }), cQ(f.debe, { color: f.debe > 0 ? CH.rojo : CH.verde, b: true })]),
+    ["TOTAL", "", "", cQ(adel), cQ(abon), cQ(suma(filas, (f) => f.debe))]);
+  seccionDoc(d, "Detalle de movimientos");
+  tablaDoc(d, ["Fecha", "Persona", "Movimiento", "Nota", "Monto"], [0, 0, 0, 0, 1],
+    movsR.map((m) => {
+      const a = m.tipo === "ADELANTO";
+      return [fmtFecha(m.fecha), cT(k.nombrePersona[m.pilotoId] || "", { b: true }), cT(a ? "Adelanto" : "Abono", { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
+    }), null);
+  return d;
+}
+
+function boletasDe(k, personas) {
+  const out = [];
+  personas.forEach((p) => {
+    const suyos = k.movs.filter((m) => m.pilotoId === p.id).sort((a, b) => a.fecha - b.fecha);
+    const pagos = suyos.filter((m) => m.tipo === "PAGO");
+    pagos.filter((m) => k.enRango(m.fecha)).forEach((pago) => {
+      const desc = suma(suyos.filter((m) => m.tipo === "ABONO" && m.nota === "Descontado del salario" && m.fecha >= pago.fecha - 1000 && m.fecha <= pago.fecha), (m) => m.monto);
+      const ant = Math.max(-Infinity, ...pagos.filter((x) => x.fecha < pago.fecha).map((x) => x.fecha));
+      const periodo = suyos.filter((m) => (m.tipo === "ADELANTO" || m.tipo === "ABONO") && m.fecha > ant && m.fecha <= pago.fecha);
+      const queda = suma(suyos.filter((m) => m.fecha <= pago.fecha), (m) => m.tipo === "ADELANTO" ? m.monto : m.tipo === "ABONO" ? -m.monto : 0);
+      out.push({ p, pago, salario: pago.monto + desc, desc, liquido: pago.monto, debia: queda + desc, queda: Math.max(0, queda), periodo });
+    });
+  });
+  return out.sort((a, b) => a.pago.fecha - b.pago.fecha || a.p.nombre.localeCompare(b.p.nombre));
+}
+
+function repBoletas(k) {
+  const bs = boletasDe(k, personasFiltro(k));
+  const una = bs.length === 1;
+  const d = docNuevo(una ? "Boleta de pago" : "Boletas de pago",
+    [textoRango(k), una ? bs[0].p.nombre : bs.length + (bs.length === 1 ? " pago" : " pagos")],
+    "Líquido a recibir = salario − descuento por adelantos");
+  if (!bs.length) {
+    notaDoc(d, "No hay pagos de salario en estas fechas. Los pagos se hacen en la app: Personal → toca a la persona → Pagar salario.");
+    return d;
+  }
+  if (!una) cuadros(d, [cuadro("Salarios", suma(bs, (b) => b.salario), CH.morado), cuadro("Descuentos", suma(bs, (b) => b.desc), CH.azul), cuadro("Líquido pagado", suma(bs, (b) => b.liquido), CH.verde)]);
+  bs.forEach((b, i) => {
+    const cam = k.nombreCamion[b.pago.camionId || b.p.camionId];
+    seccionDoc(d, b.p.nombre + " · " + puesto(b.p) + (cam ? " · " + cam : "") + " · Pago del " + fmtFecha(b.pago.fecha), i > 0);
+    tablaDoc(d, ["Concepto", "Monto"], [0, 1], [
+      [cT("Salario", { b: true }), cQ(b.salario, { b: true })],
+      ["− Descuento por adelantos", cQ(b.desc, { color: CH.morado })],
+      [cT("Debía antes del pago", { color: CH.gris }), cQ(b.debia, { color: CH.azul })],
+      [cT("Queda debiendo", { color: CH.gris }), cQ(b.queda, { color: b.queda > 0 ? CH.rojo : CH.verde, b: true })]
+    ], ["LÍQUIDO A RECIBIR", cQ(b.liquido, { color: CH.verde })]);
+    if (b.periodo.length) {
+      tablaDoc(d, ["Fecha", "Movimiento", "Nota", "Monto"], [0, 0, 0, 1], b.periodo.map((m) => {
+        const a = m.tipo === "ADELANTO";
+        return [fmtFecha(m.fecha), cT(a ? "Adelanto" : "Abono", { color: a ? CH.azul : CH.verde, b: true }), cT(m.nota || "", { color: CH.gris }), cQ(m.monto, { color: a ? CH.azul : CH.verde })];
+      }), null);
+    }
+    notaDoc(d, "Recibí conforme: ______________________________        Fecha: ____________");
+  });
+  return d;
+}
+
+function repGastos(k) {
+  const cat = $("fCategoria").value;
+  const lista = k.gastosRango.filter((g) => !cat || g.categoria === cat);
+  const grupos = agruparGastos(k, lista), total = suma(lista, (g) => g.monto);
+  const colorC = { PEAJE: CH.turquesa, REPUESTOS: CH.naranja, VIATICOS: "#BE185D", OTRO: CH.gris };
+  const d = docNuevo("Reporte de gastos", [textoRango(k), textoFiltro(k) + " · " + (cat ? nombreCat(cat) : "Todos los tipos")], "Agrupado por camión, más lo entregado directo a cada dueño");
+  cuadros(d, [cuadro("Total en gastos", total, CH.naranja), ...CATEGORIAS.map((c) => cuadro(c.nombre, suma(lista.filter((g) => g.categoria === c.id), (g) => g.monto), colorC[c.id]))]);
+  tablasGastos(d, k, grupos);
+  seccionDoc(d, "Resumen");
+  tablaDoc(d, ["Grupo", "Gastos", "Subtotal"], [0, 1, 1],
+    grupos.map((g) => [cT(g.titulo + (g.det ? " · " + g.det : ""), { b: true }), String(g.lista.length), cQ(g.total)]),
+    ["GRAN TOTAL", String(lista.length), cQ(total)]);
+  return d;
+}
+
+function repDuenos(k) {
+  const filas = porDueno(k);
+  const d = docNuevo(k.fDue ? "Reporte del dueño " + k.fDue : "Reporte por dueño", [textoRango(k), textoFiltro(k)], "Diésel + gastos + adelantos del personal de sus camiones");
+  const tD = suma(filas, (f) => f.diesel), tG = suma(filas, (f) => f.gastos), tA = suma(filas, (f) => f.adelantos);
+  cuadros(d, [cuadro("Total", tD + tG + tA, CH.morado), cuadro("Diésel", tD, CH.diesel), cuadro("Gastos", tG, CH.naranja), cuadro("Adelantos", tA, CH.azul)]);
+  if (!k.fDue) {
+    seccionDoc(d, "Resumen por dueño");
+    tablaDoc(d, ["Dueño", "Camiones", "Diésel", "Gastos", "Adelantos", "Total"], [0, 1, 1, 1, 1, 1],
+      filas.map((f) => [cT(f.nombre, { b: true }), String(f.camiones), cQ(f.diesel), cQ(f.gastos), cQ(f.adelantos), cQ(f.total, { b: true })]),
+      ["TOTAL", String(suma(filas, (f) => f.camiones)), cQ(tD), cQ(tG), cQ(tA), cQ(tD + tG + tA)]);
+    notaDoc(d, "Elige un dueño arriba para ver el detalle de su diésel, gastos y adelantos.");
+    return d;
+  }
+  const ids = new Set(k.camionesVisibles.map((c) => c.id));
+  const cargas = k.cargasRango.filter((x) => ids.has(x.camionId));
+  const gastos = k.gastosRango.filter((g) => esDirecto(g) ? mismo(g.dueno, k.fDue) : ids.has(g.camionId));
+  const adel = k.movs.filter((m) => m.tipo === "ADELANTO" && k.enRango(m.fecha) && ids.has(k.camionDeMov(m)));
+  seccionDoc(d, "Resumen por camión");
+  const porCam = k.camionesVisibles.map((c) => {
+    const di = suma(cargas.filter((x) => x.camionId === c.id), (x) => x.monto);
+    const ga = suma(gastos.filter((g) => !esDirecto(g) && g.camionId === c.id), (g) => g.monto);
+    const ad = suma(adel.filter((m) => k.camionDeMov(m) === c.id), (m) => m.monto);
+    return [c.nombre, di, ga, ad];
+  });
+  const dir = suma(gastos.filter(esDirecto), (g) => g.monto);
+  if (dir > 0) porCam.push(["Directo al dueño", 0, dir, 0]);
+  tablaDoc(d, ["Camión", "Diésel", "Gastos", "Adelantos", "Total"], [0, 1, 1, 1, 1],
+    porCam.map(([n, a, b, c]) => [cT(n, { b: true }), cQ(a), cQ(b), cQ(c), cQ(a + b + c, { b: true })]),
+    ["TOTAL", cQ(tD), cQ(tG), cQ(tA), cQ(tD + tG + tA)]);
+  seccionDoc(d, "Detalle de diésel");
+  tablaDiesel(d, k, cargas);
+  seccionDoc(d, "DETALLE DE GASTOS");
+  tablasGastos(d, k, agruparGastos(k, gastos));
+  notaDoc(d, "Total en gastos: " + fmtQ(suma(gastos, (g) => g.monto)));
+  seccionDoc(d, "Detalle de adelantos");
+  tablaAdelantos(d, k, adel);
+  notaDoc(d, "TOTAL DE " + k.fDue.toUpperCase() + ": " + fmtQ(tD + tG + tA) + "  (diésel + gastos + adelantos)");
+  return d;
+}
+
+// ---------- Liquidación ----------
+const LIQ_DEF = { pctFijo: "3", pctVar: "", gps: "", contador: "", docs: "", otros: [], fact: {} };
+let liq = (() => { try { return { ...LIQ_DEF, ...JSON.parse(localStorage.getItem("liquidacion") || "{}") }; } catch (e) { return { ...LIQ_DEF }; } })();
+const guardarLiq = () => { try { localStorage.setItem("liquidacion", JSON.stringify({ ...liq, fact: {} })); } catch (e) {} };
+const numero = (v) => { const n = parseFloat(String(v ?? "").replace(/[,\sQq]/g, "")); return isFinite(n) ? n : 0; };
+const duenosLiq = (k) => [...new Map(k.camiones.filter((c) => (c.dueno || "").trim()).map((c) => [c.dueno.trim().toLowerCase(), c.dueno.trim()])).values()].sort((a, b) => a.localeCompare(b));
+
+function calcLiq(k) {
+  const ds = duenosLiq(k);
+  const camDe = Object.fromEntries(ds.map((d) => [d, k.camiones.filter((c) => mismo(c.dueno, d))]));
+  const totalCam = suma(ds, (d) => camDe[d].length);
+  const pf = numero(liq.pctFijo), pv = numero(liq.pctVar), gps = numero(liq.gps), cont = numero(liq.contador), docs = numero(liq.docs);
+  const fact = Object.fromEntries(ds.map((d) => [d, numero(liq.fact[d])]));
+  const totalFact = suma(ds, (d) => fact[d]);
+  const parte = (modo, d) => modo === "PAREJO" ? (ds.length ? 1 / ds.length : 0)
+    : modo === "CAMION" ? (totalCam ? camDe[d].length / totalCam : 0)
+    : (totalFact > 0 ? fact[d] / totalFact : (ds.length ? 1 / ds.length : 0));
+  return ds.map((d) => {
+    const ids = new Set(camDe[d].map((c) => c.id)), n = ids.size, f = fact[d];
+    const desc = [[`${pf}% fijo sobre lo facturado`, f * pf / 100]];
+    if (pv > 0) desc.push([`${pv}% variable sobre lo facturado`, f * pv / 100]);
+    if (gps > 0) desc.push([`GPS (${fmtQ(gps)} × ${n} ${n === 1 ? "camión" : "camiones"})`, gps * n]);
+    if (cont > 0) desc.push([`Contador (parejo entre ${ds.length})`, cont * parte("PAREJO", d)]);
+    if (docs > 0) desc.push([`Compra de facturas/documentos (${n} de ${totalCam} camiones)`, docs * parte("CAMION", d)]);
+    liq.otros.forEach((o) => desc.push([`${o.nombre} (${MODOS[o.modo] || ""})`, numero(o.monto) * parte(o.modo, d)]));
+    const cargas = datos.diesel.filter((x) => ids.has(x.camionId) && k.enRango(x.fecha));
+    const gs = datos.movimientos.filter((m) => m.tipo === "GASTO" && k.enRango(m.fecha) && (esDirecto(m) ? mismo(m.dueno, d) : ids.has(m.camionId)));
+    const diesel = suma(cargas, (x) => x.monto), gal = suma(cargas, (x) => x.galones);
+    const porCat = CATEGORIAS.map((c) => [c.nombre, suma(gs.filter((g) => !esDirecto(g) && g.categoria === c.id), (g) => g.monto)]).filter((x) => x[1] > 0);
+    const directo = suma(gs.filter(esDirecto), (g) => g.monto);
+    const totDesc = suma(desc, (x) => x[1]), totGastos = diesel + suma(gs, (g) => g.monto);
+    return { d, n, f, desc, totDesc, cargas, gs, diesel, gal, porCat, directo, totGastos, neto: f - totDesc - totGastos };
+  }).filter((r) => !k.fDue || mismo(r.d, k.fDue));
+}
+
+function repLiquidacion(k) {
+  const rs = calcLiq(k);
+  const d = docNuevo("Liquidación por dueño", [textoRango(k), `% fijo ${numero(liq.pctFijo)} · % variable ${numero(liq.pctVar)}`],
+    "Le queda = facturado − descuentos − gastos compartidos − diésel − gastos de sus camiones − lo entregado directo al dueño");
+  const tf = suma(rs, (r) => r.f), tdsc = suma(rs, (r) => r.totDesc), tg = suma(rs, (r) => r.totGastos), tn = suma(rs, (r) => r.neto);
+  cuadros(d, [cuadro("Facturado", tf, CH.azul), cuadro("Descuentos", tdsc, CH.morado), cuadro("Diésel y gastos", tg, CH.naranja), cuadro("Les queda", tn, tn >= 0 ? CH.verde : CH.rojo)]);
+  seccionDoc(d, "Resumen");
+  tablaDoc(d, ["Dueño", "Camiones", "Facturado", "Descuentos", "Diésel", "Gastos", "Le queda"], [0, 1, 1, 1, 1, 1, 1],
+    rs.map((r) => [cT(r.d, { b: true }), String(r.n), cQ(r.f), cQ(r.totDesc, { color: CH.morado }), cQ(r.diesel, { color: CH.diesel }), cQ(r.totGastos - r.diesel, { color: CH.naranja }), cQ(r.neto, { color: r.neto >= 0 ? CH.verde : CH.rojo, b: true })]),
+    ["TOTAL", String(suma(rs, (r) => r.n)), cQ(tf), cQ(tdsc), cQ(suma(rs, (r) => r.diesel)), cQ(tg - suma(rs, (r) => r.diesel)), cQ(tn)]);
+  rs.forEach((r) => {
+    seccionDoc(d, `${r.d} · ${r.n} ${r.n === 1 ? "camión" : "camiones"}`, true);
+    const filas = [[cT("Facturado", { b: true }), cQ(r.f, { b: true })]];
+    r.desc.forEach(([n, m]) => filas.push(["− " + n, cQ(m, { color: CH.morado })]));
+    filas.push([`− Diésel (${fmtGal(r.gal)} gal)`, cQ(r.diesel, { color: CH.diesel })]);
+    r.porCat.forEach(([n, m]) => filas.push(["− " + n, cQ(m, { color: CH.naranja })]));
+    if (r.directo > 0) filas.push(["− Entregado directo al dueño", cQ(r.directo, { color: CH.morado })]);
+    tablaDoc(d, ["Concepto", "Monto"], [0, 1], filas, ["LE QUEDA", cQ(r.neto, { color: r.neto >= 0 ? CH.verde : CH.rojo })]);
+    if (r.cargas.length) { seccionDoc(d, r.d + " · Detalle de diésel"); tablaDiesel(d, k, r.cargas); }
+    if (r.gs.length) { seccionDoc(d, r.d + " · Detalle de gastos"); tablasGastos(d, k, agruparGastos(k, r.gs)); }
+    notaDoc(d, `${r.d}: facturado ${fmtQ(r.f)} − descuentos ${fmtQ(r.totDesc)} − diésel y gastos ${fmtQ(r.totGastos)} = LE QUEDA ${fmtQ(r.neto)}`);
+  });
+  if (!rs.length) notaDoc(d, "No hay dueños asignados a los camiones. Asígnalos en la app (Camiones → editar → Dueño).");
+  return d;
+}
+
+const campoLiq = (clave, etq, val) => `<div class="campo"><label>${esc(etq)}<input data-liq="${esc(clave)}" value="${esc(val)}" inputmode="decimal" autocomplete="off"></label></div>`;
+function formLiq(k) {
+  const ds = duenosLiq(k);
+  return `<div class="tarjeta">
+    <h2>Datos de la liquidación</h2>
+    <p class="nota">Periodo: ${esc(textoRango(k))}. Cámbialo arriba (por ejemplo "Esta quincena" o "Elegir fechas…"). Los porcentajes y montos fijos se recuerdan en este navegador.</p>
+    <h3 class="sub-liq">Facturado de cada dueño</h3>
+    <div class="form-liq">${ds.map((d) => campoLiq("fact:" + d, d + " (Q)", liq.fact[d] || "")).join("") || '<div class="vacio">Sin dueños asignados a los camiones.</div>'}</div>
+    <h3 class="sub-liq">Descuentos</h3>
+    <div class="form-liq">
+      ${campoLiq("pctFijo", "% fijo", liq.pctFijo)}
+      ${campoLiq("pctVar", "% variable (ej. 6.4)", liq.pctVar)}
+      ${campoLiq("gps", "GPS por camión (Q)", liq.gps)}
+      ${campoLiq("contador", "Contador, total (parejo)", liq.contador)}
+      ${campoLiq("docs", "Facturas/documentos, total (por camión)", liq.docs)}
+    </div>
+    <h3 class="sub-liq">Otros gastos compartidos</h3>
+    ${liq.otros.map((o, i) => `<div class="fila-otro"><span><b>${esc(o.nombre)}</b> · ${fmtQ(numero(o.monto))} · ${MODOS[o.modo] || ""}</span><button class="boton-sec" data-quitar-otro="${i}">Quitar</button></div>`).join("")}
+    <div class="form-liq">
+      <div class="campo"><label>Nombre<input id="otroNombre" placeholder="Ej. Seguro" autocomplete="off"></label></div>
+      <div class="campo"><label>Monto total (Q)<input id="otroMonto" inputmode="decimal" autocomplete="off"></label></div>
+      <div class="campo"><label>Se reparte<select id="otroModo"><option value="CAMION">Por camión</option><option value="PAREJO">Parejo</option><option value="FACTURADO">Según facturado</option></select></label></div>
+      <div class="campo"><label>&nbsp;<button class="boton-sec" id="otroAgregar" type="button">+ Agregar</button></label></div>
+    </div>
+  </div>`;
+}
+
+function construirReporte(k) {
+  return { diesel: repDiesel, adelantos: repAdelantos, boletas: repBoletas, gastos: repGastos, duenos: repDuenos, liquidacion: repLiquidacion }[tabReporte](k);
+}
+
+function vistaReportes(k) {
+  if (!soyMaster) return '<div class="tarjeta"><div class="vacio">Solo el usuario máster puede ver y descargar reportes.</div></div>';
+  const ayuda = {
+    diesel: "Usa los filtros de periodo, dueño y camión.",
+    adelantos: "Usa el periodo y elige una persona o todas.",
+    boletas: "Elige una persona para su boleta, o todas para imprimirlas juntas (una por hoja).",
+    gastos: "Usa el periodo, el dueño, el camión y el tipo de gasto.",
+    duenos: "Elige un dueño para ver el detalle completo de su diésel, gastos y adelantos.",
+    liquidacion: "Escribe lo facturado y los descuentos; el diésel y los gastos se toman solos."
+  }[tabReporte];
+  return `<div class="tarjeta">
+    <div class="pestanas" role="tablist">${TABS_REP.map(([id, n]) => `<button class="pestana ${id === tabReporte ? "activa" : ""}" role="tab" aria-selected="${id === tabReporte}" data-rep="${id}">${n}</button>`).join("")}</div>
+    <p class="nota" style="margin-top:12px">${ayuda}</p>
+    <div class="acciones-rep">
+      <button class="boton" id="repPdf" type="button">📄 Descargar PDF</button>
+      <button class="boton-sec" id="repExcel" type="button">📊 Descargar Excel</button>
+    </div>
+    <p class="nota" style="margin-top:8px">En PDF se abre la ventana de impresión: elige <b>"Guardar como PDF"</b> o tu impresora.</p>
+  </div>
+  ${tabReporte === "liquidacion" ? formLiq(k) : ""}
+  <div id="contHoja">${docHTML(construirReporte(k))}</div>`;
+}
+
+function activarReportes() {
+  document.querySelectorAll("[data-rep]").forEach((b) => b.addEventListener("click", () => { tabReporte = b.dataset.rep; dibujar(); }));
+  const pdf = $("repPdf");
+  if (!pdf) return;
+  pdf.addEventListener("click", imprimir);
+  $("repExcel").addEventListener("click", descargarExcel);
+  const rehacer = () => { $("contHoja").innerHTML = docHTML(construirReporte(contexto())); };
+  document.querySelectorAll("[data-liq]").forEach((inp) => inp.addEventListener("input", () => {
+    const c = inp.dataset.liq;
+    if (c.startsWith("fact:")) liq.fact[c.slice(5)] = inp.value; else liq[c] = inp.value;
+    guardarLiq();
+    rehacer();
+  }));
+  document.querySelectorAll("[data-quitar-otro]").forEach((b) => b.addEventListener("click", () => { liq.otros.splice(Number(b.dataset.quitarOtro), 1); guardarLiq(); dibujar(); }));
+  const agregar = $("otroAgregar");
+  if (agregar) agregar.addEventListener("click", () => {
+    const nombre = $("otroNombre").value.trim(), monto = numero($("otroMonto").value);
+    if (!nombre || !(monto > 0)) { alert("Escribe el nombre y un monto mayor a cero."); return; }
+    liq.otros.push({ nombre, monto: String(monto), modo: $("otroModo").value });
+    guardarLiq();
+    dibujar();
+  });
+}
+
 // ---------------- Dibujar la sección elegida ----------------
 function dibujar() {
   const sec = seccionActual();
@@ -589,12 +1156,22 @@ function dibujar() {
   $("subtitulo").textContent = k.r.txt.charAt(0).toUpperCase() + k.r.txt.slice(1) +
     (k.fDue && sec !== "personal" && sec !== "deudas" ? " · " + k.fDue : "") +
     (k.fCam && sec !== "personal" && sec !== "deudas" ? " · " + k.nombreCamion[k.fCam] : "");
-  const sinCamion = sec === "personal" || sec === "deudas";
+  const rep = sec === "reportes";
+  const conPersona = rep && (tabReporte === "adelantos" || tabReporte === "boletas");
+  const sinCamion = sec === "personal" || sec === "deudas" || conPersona;
   $("campoCamion").hidden = sinCamion;
   $("campoDueno").hidden = sinCamion;
-  $("campoCategoria").hidden = sec !== "gastos";
-  const vistas = { inicio: vistaInicio, diesel: vistaDiesel, gastos: vistaGastos, duenos: vistaDuenos, personal: vistaPersonal, deudas: vistaDeudas };
+  $("campoCategoria").hidden = !(sec === "gastos" || (rep && tabReporte === "gastos"));
+  if (rep && !$("fCategoria").options.length) $("fCategoria").innerHTML = '<option value="">Todos los tipos</option>' + CATEGORIAS.map((c) => `<option value="${c.id}">${c.nombre}</option>`).join("");
+  $("campoPersona").hidden = !conPersona;
+  if (conPersona) {
+    const sp = $("fPersona"), elegida = sp.value;
+    sp.innerHTML = '<option value="">Todo el personal</option>' + k.pilotos.map((p) => `<option value="${esc(p.id)}">${esc(p.nombre)}</option>`).join("");
+    sp.value = k.pilotos.some((p) => p.id === elegida) ? elegida : "";
+  }
+  const vistas = { inicio: vistaInicio, diesel: vistaDiesel, gastos: vistaGastos, duenos: vistaDuenos, personal: vistaPersonal, deudas: vistaDeudas, reportes: vistaReportes };
   $("seccion").innerHTML = vistas[sec](k);
+  if (rep) activarReportes();
   activarGraficas();
   document.querySelectorAll("[data-mas]").forEach((b) => b.addEventListener("click", () => { mostrarTodo[b.dataset.mas] = true; dibujar(); }));
 }
@@ -635,8 +1212,8 @@ function vistaInicio(k) {
       ${kpi("Deudas pendientes (hoy)", fmtQ(deuda), conDeuda + (conDeuda === 1 ? " persona debe" : " personas deben"), k.P.debe, "deudas")}
     </div>
     <div class="tarjeta">
-      <h2>Gasto total por mes</h2>
-      <p class="nota">Diésel y otros gastos · últimos 12 meses · pasa el cursor o toca una barra para ver el detalle</p>
+      <h2>Gasto total ${porTiempo()}</h2>
+      <p class="nota">Diésel y otros gastos · ${esc(k.r.txt)} · pasa el cursor o toca una barra para ver el detalle</p>
       ${graficaMeses("inicio", [
         { id: "d", nombre: "Diésel", color: k.P.diesel, items: k.cargas },
         { id: "g", nombre: "Otros gastos", color: k.P.gasto, items: k.gastos }
@@ -667,8 +1244,8 @@ function vistaDiesel(k) {
       ${kpi("Pendiente de pagar", fmtQ(pend), "Pagado: " + fmtQ(total - pend), k.P.debe)}
     </div>
     <div class="tarjeta">
-      <h2>Diésel por mes</h2>
-      <p class="nota">Últimos 12 meses por camión</p>
+      <h2>Diésel ${porTiempo()}</h2>
+      <p class="nota">${esc(k.r.txt)} · por camión</p>
       ${graficaMeses("diesel", k.camionesVisibles.map((c) => ({ id: c.id, nombre: c.nombre, color: k.colorCamion[c.id], items: k.cargas.filter((d) => d.camionId === c.id) })))}
     </div>
     <div class="tarjeta">
@@ -720,8 +1297,8 @@ function vistaGastos(k) {
       ${CATEGORIAS.map((c) => kpi(c.nombre, fmtQ(suma(k.gastosRango.filter((g) => g.categoria === c.id), (g) => g.monto)), k.gastosRango.filter((g) => g.categoria === c.id).length + " registros", colorCat(c.id))).join("")}
     </div>
     <div class="tarjeta">
-      <h2>Gastos por mes</h2>
-      <p class="nota">Últimos 12 meses por tipo</p>
+      <h2>Gastos ${porTiempo()}</h2>
+      <p class="nota">${esc(k.r.txt)} · por tipo</p>
       ${graficaMeses("gastos", series.map((s) => ({ ...s, items: k.gastos.filter((g) => g.categoria === s.id) })))}
     </div>
     <div class="tarjeta">
@@ -778,8 +1355,8 @@ function vistaDuenos(k) {
     </div>
     ${k.fDue ? detalleDueno(k) : ""}
     ${k.fDue ? "" : `<div class="tarjeta">
-      <h2>Diésel por mes de cada dueño</h2>
-      <p class="nota">Últimos 12 meses</p>
+      <h2>Diésel ${porTiempo()} de cada dueño</h2>
+      <p class="nota">${esc(k.r.txt)}</p>
       ${graficaMeses("duenosMes", filas.map((f, i) => ({ id: "d" + i, nombre: f.nombre, color: k.P.serie[i % k.P.serie.length], items: k.cargas.filter((c) => k.duenoDe[c.camionId].toLowerCase() === f.nombre.toLowerCase()) })))}
     </div>`}`;
 }
@@ -898,22 +1475,42 @@ function tablaDetalle(clave, filas, enc, derecha, celdas, vacio, totales) {
 const graficas = {};
 const leyenda = (series) => series.length > 1 ? `<div class="leyenda">${series.map((s) => `<span><i style="background:${s.color}"></i>${esc(s.nombre)}</span>`).join("")}</div>` : "";
 
-function ultimos12() {
-  const hoy = new Date(), meses = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-    meses.push({ y: d.getFullYear(), m: d.getMonth(), ini: d.getTime(), fin: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() - 1 });
+// Columnas de la gráfica según el periodo elegido: por día (hasta 2 meses) o por mes
+let rangoActual = null;
+function columnasTiempo() {
+  const r = rangoActual || rangoPeriodo();
+  let ini = r.ini;
+  if (!ini) {
+    const fechas = [...datos.diesel, ...datos.movimientos].map((x) => x.fecha).filter((f) => f > 0);
+    ini = fechas.length ? Math.min(...fechas) : r.fin;
   }
-  return meses;
+  const cols = [];
+  if ((r.fin - ini) / 86400000 <= 62) {
+    const d0 = new Date(ini);
+    for (let d = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate()); d.getTime() <= r.fin; d.setDate(d.getDate() + 1)) {
+      const a = d.getTime();
+      cols.push({ titulo: d.getDate() + " " + MESES[d.getMonth()] + " " + d.getFullYear(), etq: String(d.getDate()), extra: d.getDate() === 1 || !cols.length ? MESES[d.getMonth()] : "",
+        ini: a, fin: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime() - 1 });
+    }
+    return { cols, modo: "día" };
+  }
+  const d0 = new Date(ini);
+  for (let d = new Date(d0.getFullYear(), d0.getMonth(), 1); d.getTime() <= r.fin; d.setMonth(d.getMonth() + 1)) {
+    cols.push({ titulo: MESES[d.getMonth()] + " " + d.getFullYear(), etq: MESES[d.getMonth()], extra: d.getMonth() === 0 || !cols.length ? String(d.getFullYear()).slice(2) : "",
+      ini: d.getTime(), fin: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() - 1 });
+  }
+  return { cols, modo: "mes" };
 }
+const porTiempo = () => columnasTiempo().modo === "día" ? "por día" : "por mes";
 
 // Barras verticales apiladas por mes
 function graficaMeses(id, series) {
-  const meses = ultimos12();
+  const meses = columnasTiempo().cols;
+  const n = Math.max(1, meses.length), salto = Math.ceil(n / 16);
   const valores = meses.map((mes) => {
     const por = {};
     series.forEach((s) => por[s.id] = suma(s.items.filter((x) => x.fecha >= mes.ini && x.fecha <= mes.fin), (x) => x.monto));
-    return { titulo: MESES[mes.m] + " " + mes.y, por, total: Object.values(por).reduce((a, b) => a + b, 0) };
+    return { titulo: mes.titulo, por, total: Object.values(por).reduce((a, b) => a + b, 0) };
   });
   graficas[id] = { valores, series };
 
@@ -922,7 +1519,7 @@ function graficaMeses(id, series) {
   const maxV = Math.max(0, ...valores.map((v) => v.total));
   const paso = escalaBonita(maxV), tope = paso * 4;
   const y = (v) => arr + alto - (v / tope) * alto;
-  const col = ancho / 12, barra = Math.min(46, col * 0.62);
+  const col = ancho / n, barra = Math.max(3, Math.min(46, col * 0.62));
   const iMax = valores.findIndex((v) => v.total > 0 && v.total === maxV);
 
   let svg = `<svg class="ancha" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfica por mes">`;
@@ -942,12 +1539,12 @@ function graficaMeses(id, series) {
       base += val;
     });
     const m = meses[i];
-    svg += `<text x="${cx}" y="${H - 12}" text-anchor="middle" font-size="12">${MESES[m.m]}${m.m === 0 || i === 0 ? " " + String(m.y).slice(2) : ""}</text>`;
+    if (i % salto === 0) svg += `<text x="${cx}" y="${H - 12}" text-anchor="middle" font-size="12">${m.etq}${m.extra ? " " + m.extra : ""}</text>`;
     if (i === iMax) svg += `<text class="fuerte" x="${cx}" y="${y(v.total) - 6}" text-anchor="middle" font-size="11">${fmtQcorto(v.total)}</text>`;
     svg += `<rect class="zona" data-g="${id}" data-i="${i}" x="${izq + col * i}" y="${arr}" width="${col}" height="${alto}" fill="transparent"/>`;
   });
   svg += "</svg>";
-  return leyenda(series) + `<div class="grafica">${svg}</div>` + (maxV === 0 ? '<div class="vacio">Sin registros en los últimos 12 meses.</div>' : "");
+  return leyenda(series) + `<div class="grafica">${svg}</div>` + (maxV === 0 ? '<div class="vacio">Sin registros en este periodo.</div>' : "");
 }
 
 // Barras horizontales (apiladas, o agrupadas si agrupar = true), una fila por nombre
@@ -1040,10 +1637,25 @@ window.addEventListener("resize", () => {
   esperaRedibujo = setTimeout(() => { if (!$("vistaPanel").hidden) dibujar(); }, 250);
 });
 
-for (const id of ["fPeriodo", "fDueno", "fCamion", "fCategoria"]) $(id).addEventListener("change", () => { mostrarTodo = {}; dibujar(); });
+// Mostrar el selector de mes o de fechas según el periodo elegido
+function pintarPeriodo() {
+  const v = $("fPeriodo").value, hoy = new Date();
+  const dosDig = (n) => String(n).padStart(2, "0");
+  const iso = (d) => `${d.getFullYear()}-${dosDig(d.getMonth() + 1)}-${dosDig(d.getDate())}`;
+  $("campoMes").hidden = v !== "elegirMes";
+  $("campoDesde").hidden = $("campoHasta").hidden = v !== "rango";
+  if (v === "elegirMes" && !$("fMes").value) $("fMes").value = `${hoy.getFullYear()}-${dosDig(hoy.getMonth() + 1)}`;
+  if (v === "rango" && !$("fDesde").value) {
+    $("fDesde").value = iso(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    $("fHasta").value = iso(hoy);
+  }
+}
+$("fPeriodo").addEventListener("change", pintarPeriodo);
+for (const id of ["fPeriodo", "fDueno", "fCamion", "fCategoria", "fMes", "fDesde", "fHasta", "fPersona"]) $(id).addEventListener("change", () => { mostrarTodo = {}; dibujar(); });
 
 // ---------------- Datos de ejemplo ----------------
 function cargarDemo() {
+  soyMaster = true;
   const hoy = new Date(), d = (mAtras, dia) => new Date(hoy.getFullYear(), hoy.getMonth() - mAtras, dia, 10).getTime();
   datos.camiones = [
     { id: "c1", nombre: "Camión 1", placa: "C-123ABC", dueno: "Juan" }, { id: "c2", nombre: "Camión 2", placa: "C-456DEF", dueno: "Juan" },
@@ -1153,6 +1765,7 @@ async function iniciarFirebase() {
       escuchar("pilotos", (id, x) => ({ id, nombre: x.nombre || "", camionId: x.camionId || "", tipo: x.tipo || "PILOTO", salario: x.salario || 0 }));
       escuchar("diesel", (id, x) => ({ id, camionId: x.camionId || "", fecha: x.fecha || 0, galones: x.galones || 0, monto: x.monto || 0, pagado: !!x.pagado }));
       escuchar("movimientos", (id, x) => ({ id, pilotoId: x.pilotoId || "", tipo: x.tipo || "", monto: x.monto || 0, fecha: x.fecha || 0, nota: x.nota || "", categoria: x.categoria || "OTRO", titulo: x.titulo || "", camionId: x.camionId || "", dueno: x.dueno || "" }));
+      soyMaster = esMaster;
       $("usuarioLateral").textContent = user.email.replace(DOMINIO_USUARIOS, "") + (esMaster ? " · máster" : "");
       mostrar("vistaPanel");
       pintarMenu();
@@ -1168,5 +1781,6 @@ const esDemo = location.search.includes("demo") || !/github\.io$/.test(location.
 if (esDemo) cargarDemo();
 else iniciarFirebase().catch((e) => mensaje("No se pudo conectar", String(e.message || e)));
 </script>
+<div id="impresion" aria-hidden="true"></div>
 </body>
 </html>
